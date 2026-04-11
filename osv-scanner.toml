@@ -1,0 +1,30 @@
+# OSV Scanner Ignore List
+# Indirect dependencies via eslint toolchain - dev-only, not exploitable in production
+
+[[IgnoredVulns]]
+id = "GHSA-f886-m6hf-6m8v"
+reason = "Indirect: brace-expansion via minimatch <- eslint (dev-only, not in production bundle)"
+
+[[IgnoredVulns]]
+id = "GHSA-25h7-pfq9-p65f"
+reason = "Indirect: flatted via flat-cache <- eslint (dev-only, not in production bundle)"
+
+[[IgnoredVulns]]
+id = "GHSA-rf6f-7fwh-wjgh"
+reason = "Indirect: flatted via flat-cache <- eslint (dev-only, not in production bundle)"
+
+[[IgnoredVulns]]
+id = "GHSA-23c5-xmqv-rm74"
+reason = "Indirect: minimatch via @eslint/config-array <- eslint (dev-only, not in production bundle)"
+
+[[IgnoredVulns]]
+id = "GHSA-7r86-cg39-jmmj"
+reason = "Indirect: minimatch via @eslint/config-array <- eslint (dev-only, not in production bundle)"
+
+[[IgnoredVulns]]
+id = "GHSA-3v7f-55p6-f55p"
+reason = "Indirect: picomatch via tinyglobby <- @typescript-eslint (dev-only, not in production bundle)"
+
+[[IgnoredVulns]]
+id = "GHSA-c2c7-rcm5-vvqj"
+reason = "Indirect: picomatch via tinyglobby <- @typescript-eslint (dev-only, not in production bundle)"
