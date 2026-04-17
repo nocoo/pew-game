@@ -10,7 +10,8 @@
     "test": "bun test",
     "test:coverage": "bun test --coverage",
     "test:e2e": "bun test --preload ./src/__tests__/e2e/setup.ts src/__tests__/e2e",
-    "check": "bun run lint && bun test"
+    "check": "bun run lint && bun test",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2",
@@ -30,5 +31,10 @@
     "husky": "^9.1.7",
     "tailwindcss": "^4.2.0",
     "typescript": "^5.9.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --max-warnings=0"
+    ]
   }
 }
