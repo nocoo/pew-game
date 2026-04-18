@@ -9,7 +9,7 @@
     "lint": "eslint --max-warnings=0 src/",
     "test": "bun test",
     "test:coverage": "bun test --coverage",
-    "test:e2e": "bun test --preload ./src/__tests__/e2e/setup.ts src/__tests__/e2e",
+    "test:e2e": "bun test src/__tests__/e2e",
     "check": "bun run lint && bun test",
     "typecheck": "tsc --noEmit"
   },
