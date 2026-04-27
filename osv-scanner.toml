@@ -28,3 +28,7 @@ reason = "Indirect: picomatch via tinyglobby <- @typescript-eslint (dev-only, no
 [[IgnoredVulns]]
 id = "GHSA-c2c7-rcm5-vvqj"
 reason = "Indirect: picomatch via tinyglobby <- @typescript-eslint (dev-only, not in production bundle)"
+
+[[IgnoredVulns]]
+id = "GHSA-qx2v-qp2m-jg93"
+reason = "Indirect: postcss@8.4.31 pinned by next@16.2.4 — cannot upgrade until Next.js releases a fix"
