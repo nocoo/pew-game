@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 
 interface ScoreEntry {
   id: number;
@@ -20,23 +20,22 @@ export default function Leaderboard({ refreshKey, highlightId }: LeaderboardProp
   const [scores, setScores] = useState<ScoreEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchScores = useCallback(async () => {
-    try {
-      const res = await fetch("/api/scores");
-      if (res.ok) {
-        const data = (await res.json()) as ScoreEntry[];
-        setScores(data);
-      }
-    } catch {
-      // silently ignore fetch errors
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
+    const fetchScores = async () => {
+      try {
+        const res = await fetch("/api/scores");
+        if (res.ok) {
+          const data = (await res.json()) as ScoreEntry[];
+          setScores(data);
+        }
+      } catch {
+        // silently ignore fetch errors
+      } finally {
+        setLoading(false);
+      }
+    };
     void fetchScores();
-  }, [fetchScores, refreshKey]);
+  }, [refreshKey]);
 
   return (
     <div className="flex h-[640px] w-56 flex-col rounded border border-[#5b3a29] bg-[#1a1510] px-4 py-3 font-mono">
