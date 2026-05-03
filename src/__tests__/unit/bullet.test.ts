@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { createBullet, updateBullets, pruneDeadBullets } from "@/game/bullet";
 import { GAME_WIDTH } from "@/game/types";
 

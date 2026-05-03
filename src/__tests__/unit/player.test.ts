@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { createPlayer, updatePlayer, hitPlayer, getEffectiveFireRate } from "@/game/player";
 import { InputManager } from "@/game/input";
 import { GAME_WIDTH, GAME_HEIGHT, TILE_SIZE } from "@/game/types";

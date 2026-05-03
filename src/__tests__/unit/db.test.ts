@@ -1,8 +1,8 @@
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
-import { Database } from "bun:sqlite";
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
+import Database from "better-sqlite3";
 
 describe("database", () => {
-  let db: Database;
+  let db: Database.Database;
 
   beforeEach(() => {
     // use in-memory DB for test isolation — no file cleanup needed

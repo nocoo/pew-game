@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { createPlayer, updatePlayer, hitPlayer } from "@/game/player";
 import { updateBullets, pruneDeadBullets } from "@/game/bullet";
 import { createEnemy, updateEnemies, damageEnemy, pruneDeadEnemies } from "@/game/enemy";
@@ -11,6 +11,7 @@ import {
   updateActivePowerUps,
   pruneDeadPowerUps,
   createPlayerBullets,
+  createPowerUp,
 } from "@/game/powerup";
 import { InputManager } from "@/game/input";
 import type { GameState } from "@/game/types";
@@ -256,7 +257,6 @@ describe("e2e: full game loop", () => {
     }
 
     // place a nuke power-up on the player
-    const { createPowerUp } = require("@/game/powerup");
     const nuke = createPowerUp("nuke", { ...state.player.pos });
     state.powerUps.push(nuke);
 
