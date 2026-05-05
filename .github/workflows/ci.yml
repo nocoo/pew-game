@@ -12,7 +12,7 @@ jobs:
     uses: nocoo/base-ci/.github/workflows/bun-quality.yml@v2026.1
     with:
         pre-command: "bun run build"
-        test-command: "bun run test"
+        test-command: "bun run test:coverage"
         typecheck-command: "true"
         enable-l2: "true"
         l2-command: "bun run test:e2e"
