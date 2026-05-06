@@ -75,7 +75,7 @@ bun dev
 bun run check
 
 # unit tests only
-bun test
+vitest run
 
 # build
 bun run build
