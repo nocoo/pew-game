@@ -9,10 +9,9 @@ on:
 
 jobs:
   ci:
-    uses: nocoo/base-ci/.github/workflows/bun-quality.yml@v2026.3
+    uses: nocoo/base-ci/.github/workflows/bun-quality.yml@v2026.2
     with:
         ignore-scripts: true
-        trusted-native-deps: "better-sqlite3"
         pre-command: "bun run build"
         test-command: "bun run test:coverage"
         typecheck-command: "true"
