@@ -38,5 +38,13 @@
     "*.{ts,tsx}": [
       "eslint --max-warnings=0"
     ]
-  }
+  },
+  "trustedDependencies": [
+    "@tailwindcss/oxide",
+    "better-sqlite3",
+    "esbuild",
+    "husky",
+    "sharp",
+    "unrs-resolver"
+  ]
 }
