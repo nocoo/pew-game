@@ -25,7 +25,7 @@ Move with **WASD** or **Arrow Keys**. Your cowboy auto-fires in the direction yo
 
 - **Runtime**: [Bun](https://bun.sh)
 - **Framework**: [Next.js 16](https://nextjs.org) (App Router)
-- **Language**: TypeScript 5.9 (strict mode)
+- **Language**: TypeScript 6 (strict mode)
 - **Styling**: Tailwind CSS 4
 - **Database**: SQLite via `better-sqlite3`
 

@@ -26,7 +26,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.0",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "22.19.21",
+    "@types/node": "25.9.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.1.0",
     "@vitest/coverage-v8": "^4.1.8",
@@ -34,7 +34,7 @@
     "eslint-config-next": "16.2.9",
     "husky": "^9.1.7",
     "tailwindcss": "^4.2.0",
-    "typescript": "^5.9.3",
+    "typescript": "6.0.3",
     "vitest": "^4.1.8"
   },
   "overrides": {
