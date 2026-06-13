@@ -19,3 +19,6 @@ jobs:
         enable-security: "true"
         enable-l2: "true"
         l2-command: "bun run test:e2e"
+        enable-l3: "true"
+        l3-command: "bun run test:e2e:bdd"
+        l3-browser: "chromium"

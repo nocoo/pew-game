@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "vitest run src/__tests__/e2e",
+    "test:e2e:bdd": "bunx playwright test",
     "check": "bun run lint && bun run test",
     "typecheck": "tsc --noEmit"
   },
@@ -24,6 +25,7 @@
     "better-sqlite3"
   ],
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@tailwindcss/postcss": "^4.3.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "25.9.3",
