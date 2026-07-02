@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "better-sqlite3": "^12.11.1",
-    "next": "16.2.9",
+    "next": "16.2.10",
     "postcss": "^8.5.16",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
@@ -28,12 +28,12 @@
     "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.3.2",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "26.0.1",
+    "@types/node": "26.1.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.1.0",
     "@vitest/coverage-v8": "^4.1.9",
     "eslint": "^10.6.0",
-    "eslint-config-next": "16.2.9",
+    "eslint-config-next": "16.2.10",
     "husky": "^9.1.7",
     "tailwindcss": "^4.3.2",
     "typescript": "6.0.3",
