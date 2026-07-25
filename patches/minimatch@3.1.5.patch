@@ -1,0 +1,17 @@
+diff --git a/minimatch.js b/minimatch.js
+index 2e4a058a130dceebf83a7bd435f5d22b765ac836..607e500259b19d3f7d22a410cc59081af78f1128 100644
+--- a/minimatch.js
++++ b/minimatch.js
+@@ -8,6 +8,12 @@ minimatch.sep = path.sep
+ 
+ var GLOBSTAR = minimatch.GLOBSTAR = Minimatch.GLOBSTAR = {}
+ var expand = require('brace-expansion')
++if (typeof expand !== 'function' && expand && typeof expand.expand === 'function') {
++  // brace-expansion@2+ exports `{ expand }`. Restore the callable shape this
++  // minimatch@3 fork was written against so overriding brace-expansion to a
++  // patched (>=5.0.8, GHSA-mh99-v99m-4gvg) version still works at runtime.
++  expand = expand.expand
++}
+ 
+ var plTypes = {
+   '!': { open: '(?:(?!(?:', close: '))[^/]*?)'},
