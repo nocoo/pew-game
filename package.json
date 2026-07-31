@@ -15,9 +15,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "better-sqlite3": "^13.0.1",
-    "next": "16.2.11",
-    "postcss": "^8.5.22",
+    "better-sqlite3": "^13.0.2",
+    "next": "16.2.12",
+    "postcss": "^8.5.25",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
@@ -25,15 +25,15 @@
     "better-sqlite3"
   ],
   "devDependencies": {
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.62.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "26.1.1",
+    "@types/node": "26.1.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.1.0",
     "@vitest/coverage-v8": "^4.1.10",
-    "eslint": "^10.7.0",
-    "eslint-config-next": "16.2.11",
+    "eslint": "^10.8.0",
+    "eslint-config-next": "16.2.12",
     "husky": "^9.1.7",
     "tailwindcss": "^4.3.3",
     "typescript": "6.0.3",
