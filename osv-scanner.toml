@@ -1,34 +1,3 @@
 # OSV Scanner Ignore List
-# Indirect dependencies via eslint toolchain - dev-only, not exploitable in production
-
-[[IgnoredVulns]]
-id = "GHSA-f886-m6hf-6m8v"
-reason = "Indirect: brace-expansion via minimatch <- eslint (dev-only, not in production bundle)"
-
-[[IgnoredVulns]]
-id = "GHSA-25h7-pfq9-p65f"
-reason = "Indirect: flatted via flat-cache <- eslint (dev-only, not in production bundle)"
-
-[[IgnoredVulns]]
-id = "GHSA-rf6f-7fwh-wjgh"
-reason = "Indirect: flatted via flat-cache <- eslint (dev-only, not in production bundle)"
-
-[[IgnoredVulns]]
-id = "GHSA-23c5-xmqv-rm74"
-reason = "Indirect: minimatch via @eslint/config-array <- eslint (dev-only, not in production bundle)"
-
-[[IgnoredVulns]]
-id = "GHSA-7r86-cg39-jmmj"
-reason = "Indirect: minimatch via @eslint/config-array <- eslint (dev-only, not in production bundle)"
-
-[[IgnoredVulns]]
-id = "GHSA-3v7f-55p6-f55p"
-reason = "Indirect: picomatch via tinyglobby <- @typescript-eslint (dev-only, not in production bundle)"
-
-[[IgnoredVulns]]
-id = "GHSA-c2c7-rcm5-vvqj"
-reason = "Indirect: picomatch via tinyglobby <- @typescript-eslint (dev-only, not in production bundle)"
-
-[[IgnoredVulns]]
-id = "GHSA-qx2v-qp2m-jg93"
-reason = "Indirect: postcss@8.4.31 pinned by next@16.2.4 — cannot upgrade until Next.js releases a fix"
+# All previously-ignored transitive vulnerabilities have been resolved by
+# upgrading direct/indirect deps or via `overrides` in package.json.
