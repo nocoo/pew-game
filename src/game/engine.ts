@@ -267,11 +267,9 @@ export class GameEngine {
     for (const pu of state.powerUps) {
       if (!pu.alive) continue;
       const sprite = this.getPowerUpSprite(pu.kind);
-      if (sprite) {
-        // gentle bob animation
-        const bob = Math.sin(state.time * 4) * 2;
-        drawSprite(ctx, sprite, pu.pos.x, pu.pos.y + bob);
-      }
+      // gentle bob animation
+      const bob = Math.sin(state.time * 4) * 2;
+      drawSprite(ctx, sprite, pu.pos.x, pu.pos.y + bob);
     }
 
     // draw bullets
@@ -316,7 +314,6 @@ export class GameEngine {
       case "rapidfire": return POWERUP_RAPIDFIRE;
       case "pierce": return POWERUP_PIERCE;
       case "nuke": return POWERUP_NUKE;
-      default: return null;
     }
   }
 
