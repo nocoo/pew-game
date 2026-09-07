@@ -1,0 +1,76 @@
+{
+  "source": "logo.png",
+  "files": [
+    {
+      "path": "public/logo-24.png",
+      "role": "transparent",
+      "size": 24,
+      "sha256": "2fcb290022e45abeb1240869c240b0620a907fa28cb680317c6672aede91817e"
+    },
+    {
+      "path": "public/logo-32.png",
+      "role": "transparent",
+      "size": 32,
+      "sha256": "e1d00323c9c8a276f08ca297548e518f08066c8b753dbc58235ad6fc22277783"
+    },
+    {
+      "path": "public/logo-48.png",
+      "role": "transparent",
+      "size": 48,
+      "sha256": "b4be6635f2d16acac1dc7793d71d2d657dfe470f0b2460fa5d4a0f28fdc52503"
+    },
+    {
+      "path": "public/logo-64.png",
+      "role": "transparent",
+      "size": 64,
+      "sha256": "6578e4868712d276a834c579909063ab5c09434116db93f7043b773ce6b871d0"
+    },
+    {
+      "path": "public/logo-128.png",
+      "role": "transparent",
+      "size": 128,
+      "sha256": "caf22e6f39ece720f9d57c376a9f379b3d9548237d9f13f7c0b8084ea84c34cd"
+    },
+    {
+      "path": "public/logo-192.png",
+      "role": "transparent",
+      "size": 192,
+      "sha256": "612c9987fc8c076a9190f1e91b5885d49515777c040292e1dd97e090ce06df88"
+    },
+    {
+      "path": "public/logo-256.png",
+      "role": "transparent",
+      "size": 256,
+      "sha256": "49e2bfa1c1150b664a29343f9d827d03867c04b877e981dded8c584d018ba49d"
+    },
+    {
+      "path": "public/logo-512.png",
+      "role": "transparent",
+      "size": 512,
+      "sha256": "6284fbb37f962e14e2e5a4d214a2ca25b6bf2c6d1ce90afa75011745f0f78e7b"
+    },
+    {
+      "path": "public/favicon.png",
+      "role": "transparent",
+      "size": 32,
+      "sha256": "e1d00323c9c8a276f08ca297548e518f08066c8b753dbc58235ad6fc22277783"
+    },
+    {
+      "path": "public/favicon.ico",
+      "role": "transparent",
+      "sha256": "2d4636417f325655f8bc64215d3a2ce85fdb3059fcc26425778adffbc8fd1352"
+    },
+    {
+      "path": "public/apple-touch-icon.png",
+      "role": "platform-tile",
+      "size": 180,
+      "sha256": "3eb4bec361b8108fc8957321e3f479faa8f2e4315f4f0e6e3cf6dd6e7f4e0b0f"
+    },
+    {
+      "path": "src/app/icon.png",
+      "role": "transparent",
+      "size": 32,
+      "sha256": "e1d00323c9c8a276f08ca297548e518f08066c8b753dbc58235ad6fc22277783"
+    }
+  ]
+}

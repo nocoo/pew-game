@@ -1,0 +1,34 @@
+{
+	"project": "pew-game",
+	"series": "material",
+	"study": "2026-09-07-01",
+	"finishing": "02",
+	"archive": "https://github.com/nocoo/hexly.ai/tree/main/artwork/logo-family/pew-game/2026-09-07-01",
+	"review": "https://hexly.ai/logos/pew-game",
+	"masters": {
+		"logo.png": {
+			"sha256": "18602c76eb1a445731b7baba7ec81175f6f81084977d1d7ad6168e6702238b90",
+			"source": "artwork/logo-family/pew-game/2026-09-07-01/finishing/02/exports/pew-game-transparent-2048.png",
+			"width": 2048,
+			"height": 2048
+		},
+		"assets/brand/icon.png": {
+			"sha256": "b4a18046011d7da6cde997aae3b72c1e000dc2d509e29e3a8218d65276e04535",
+			"source": "artwork/logo-family/pew-game/2026-09-07-01/finishing/02/exports/pew-game-icon-2048.png",
+			"width": 2048,
+			"height": 2048
+		},
+		"assets/brand/icon-rounded.png": {
+			"sha256": "a113a9b96ef5d3b96a1ca70a73537596a5ba35a0613d12a756d638d4d2d84d8e",
+			"source": "artwork/logo-family/pew-game/2026-09-07-01/finishing/02/exports/pew-game-rounded-2048.png",
+			"width": 2048,
+			"height": 2048
+		},
+		"assets/brand/background.png": {
+			"sha256": "7e76b445259d255618557f2aff6b398892563c2e2363532efc648ef8e6faf067",
+			"source": "artwork/logo-family/pew-game/2026-09-07-01/finishing/02/background.png",
+			"width": 2048,
+			"height": 2048
+		}
+	}
+}

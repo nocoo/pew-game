@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/brand/icon-rounded.png" alt="Pew Game logo" width="180" height="180" />
+</p>
+
 # pew.md
 
 A pixel art twin-stick shooter in the browser, inspired by *Journey of the Prairie King* from Stardew Valley.
@@ -88,3 +92,5 @@ bun run build
 ## License
 
 [MIT](LICENSE)
+
+Logo assets and usage: [guide](docs/01-logo-usage.md) · [identity study](https://hexly.ai/logos/pew-game).
