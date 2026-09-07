@@ -14,7 +14,7 @@ Small header/sidebar marks and favicons use the transparent foreground without a
 ## Consumers
 
 - src/app/icon.png: Next.js icon route
-- src/app/layout.tsx: touch icon
+- src/app/layout.tsx: explicit transparent browser icon and square touch icon
 
 ## Study
 
