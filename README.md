@@ -1,96 +1,126 @@
 <p align="center">
-  <img src="assets/brand/icon-rounded.png" alt="Pew Game logo" width="180" height="180" />
+  <img src="assets/brand/icon-rounded.png" alt="Pew Game" width="128" height="128" />
 </p>
 
-# pew.md
+<h1 align="center">Pew.md</h1>
 
-A pixel art twin-stick shooter in the browser, inspired by *Journey of the Prairie King* from Stardew Valley.
+<p align="center">用键盘躲避敌人、收集道具，在浏览器里挑战一波又一波的像素射击。</p>
 
-Built with Next.js 16, Bun, TypeScript (strict mode), and Tailwind CSS 4. All sprites are drawn purely in code — no image assets.
+<p align="center">
+  <a href="https://pew.md">站点</a> ·
+  <a href="docs/README.en.md">English</a>
+</p>
 
-**[Play now → pew.md](https://pew.md)**
+## 这是什么
 
-![pew.md gameplay](https://s.zhe.to/dcd0e6e42358/20260222/8f74eaa9-20c4-4d15-990f-52d2349fb950.jpg)
+Pew Game（pew.md）是一款单人浏览器射击游戏，玩法灵感来自《星露谷物语》的 Journey of the Prairie King。玩家控制牛仔在方形场地中移动并自动射击，躲避不断出现的敌人，结束后可以提交分数到排行榜。
 
-## Play
+游戏使用键盘操作，适合桌面浏览器。角色、场景和道具像素图由代码绘制，游戏循环独立于 React；页面与排行榜由 Next.js 提供。
 
-Move with **WASD** or **Arrow Keys**. Your cowboy auto-fires in the direction you're moving. Survive waves of bandits, collect power-ups, and climb the leaderboard.
+![Pew.md 游戏画面](https://s.zhe.to/dcd0e6e42358/20260222/8f74eaa9-20c4-4d15-990f-52d2349fb950.jpg)
 
-### Power-ups (wave 3+, 25% drop on kill)
+## 功能
 
-| Power-up | Effect |
+- 从 3 条生命开始，受伤后获得短暂无敌时间；敌人数量和生成速度随波次增加。
+- 普通、快速和坦克三类敌人，随着波次逐步出现。
+- 持续向最后移动方向自动射击，移动时射速略有提高。
+- 收集散射、快速射击、穿透和清场道具；前三种效果会在一段时间后结束。
+- 使用 1–6 位英文字母或数字名字提交成绩，查看历史前 10 名排行榜。
+- 以 320 × 320 的逻辑画布绘制，在页面中按 2 倍像素放大显示。
+
+## 使用
+
+打开 [pew.md](https://pew.md)，按以下方式游玩：
+
+| 操作 | 按键 / 行为 |
 | --- | --- |
-| **Spread** | Fires 3 bullets in a fan pattern |
-| **Rapidfire** | Doubles fire rate |
-| **Pierce** | Bullets pass through enemies |
-| **Nuke** | Instantly kills all enemies on screen |
+| 开始 | Space 或 Enter |
+| 移动和改变射击方向 | WASD 或方向键 |
+| 射击 | 自动持续射击；停止移动后保留最后方向 |
+| 提交分数 | 游戏结束后输入名字并点击 Save，也可以 Skip |
+| 再来一局 | 关闭成绩表单后按 Space 或 Enter |
 
-## Tech stack
+第 3 波起，击败敌人有机会掉落道具；清场道具从第 5 波起出现。
 
-- **Runtime**: [Bun](https://bun.sh)
-- **Framework**: [Next.js 16](https://nextjs.org) (App Router)
-- **Language**: TypeScript 6 (strict mode)
-- **Styling**: Tailwind CSS 4
-- **Database**: SQLite via `better-sqlite3`
+| 道具 | 效果 |
+| --- | --- |
+| Spread | 扇形发射 3 发子弹 |
+| Rapidfire | 射速翻倍 |
+| Pierce | 子弹穿过敌人 |
+| Nuke | 清除当前场上敌人 |
 
-## Architecture
+排行榜需要连接服务器。成绩由客户端上报，服务端检查会话签名、重复提交，以及分数、波次和时长的合理性；它不回放完整对局。
 
-```
-src/
-├── game/          # Pure TypeScript game engine (no React dependency)
-│   ├── types.ts   # All interfaces: Player, Bullet, Enemy, PowerUp, etc.
-│   ├── engine.ts  # Main loop, state machine, rendering
-│   ├── input.ts   # Keyboard manager (WASD + arrows)
-│   ├── sprites.ts # Pixel art defined as 2D hex color arrays
-│   ├── player.ts  # Movement, auto-fire, power-up effects
-│   ├── bullet.ts  # Creation, movement, pierce support
-│   ├── enemy.ts   # 3 types (basic/fast/tank), edge spawning, AI
-│   ├── collision.ts
-│   ├── wave.ts    # Progressive difficulty
-│   └── powerup.ts # Spawn, collect, apply, update
-├── components/    # React UI layer
-│   ├── GameCanvas.tsx   # Canvas mount, session management
-│   ├── Leaderboard.tsx  # Top 10 sidebar
-│   └── NameInput.tsx    # Game over name entry (1-6 chars)
-├── lib/           # Server-side
-│   ├── db.ts      # SQLite schema & queries
-│   └── anticheat.ts # HMAC session tokens, replay prevention
-└── app/
-    ├── page.tsx   # Layout: game + leaderboard
-    └── api/       # REST endpoints
-        ├── token/route.ts  # GET /api/token
-        └── scores/route.ts # GET & POST /api/scores
-```
+## 开发
 
-**Rendering**: OffscreenCanvas at native 320x320, scaled 2x to 640x640 with `image-rendering: pixelated`.
-
-**Anti-cheat**: Server issues HMAC-signed session tokens at game start. On game over, the client submits the token with the score. The server validates the signature, checks score/wave/duration plausibility, and prevents replay attacks.
-
-## Development
+需要 Bun 和 Node.js 22.12+。`better-sqlite3` 使用原生模块；依赖安装需要完成该模块的构建或预编译二进制安装。
 
 ```bash
-# install
-bun install
-
-# dev server
-bun dev
-
-# lint + test
-bun run check
-
-# unit tests only
-vitest run
-
-# build
-bun run build
+git clone https://github.com/nocoo/pew-game.git
+cd pew-game
+bun install --frozen-lockfile
+bun run dev
 ```
 
-### Test coverage
+开发服务默认位于 `http://localhost:3000`。SQLite 数据库会在首次访问时自动创建，默认路径为仓库根目录的 `pew.db`。
 
-73 tests across 9 files covering player mechanics, bullet physics, enemy AI, collision detection, wave progression, power-ups, anti-cheat validation, and database operations. Includes E2E game loop simulation.
+| 环境变量 | 用途 |
+| --- | --- |
+| `DATABASE_PATH` | SQLite 文件路径；父目录需要存在，部署时使用持久化存储 |
+| `ANTICHEAT_SECRET` | 会话 token 的 HMAC 签名密钥；部署时设置独立随机值 |
 
-## License
+```bash
+bun run check       # ESLint 与测试
+bun run typecheck
+bun run build
+bun run start
+```
 
-[MIT](LICENSE)
+仓库提供 [Dockerfile](Dockerfile)，容器使用 `/app/data/pew.db`；部署时为 `/app/data` 挂载持久卷并设置 `ANTICHEAT_SECRET`。当前重复提交记录保存在服务进程内存中。
 
-Logo assets and usage: [guide](docs/01-logo-usage.md) · [identity study](https://hexly.ai/logos/pew-game).
+```text
+src/game/          输入、游戏循环、像素绘图与战斗规则
+src/components/    Canvas 容器、成绩表单与排行榜
+src/lib/           SQLite 和成绩校验
+src/app/api/       会话 token 与成绩 API
+src/__tests__/     单元与游戏循环测试
+e2e/bdd/           浏览器页面冒烟测试
+```
+
+## 测试
+
+从仓库根目录执行：
+
+| 测试层 | 命令 |
+| --- | --- |
+| 单元与游戏循环测试 | `bun run test` |
+| 仅游戏循环集成测试 | `bun run test:e2e` |
+| 浏览器冒烟测试 | `bun run test:e2e:bdd` |
+
+浏览器测试前执行 `bunx playwright install chromium`；Playwright 自动启动端口 `23000` 的本地服务，检查页面标题和主标题。游戏循环测试在无 Canvas 的模拟帧中检查规则，实际画面、键盘手感和成绩提交仍需打开游戏验证。`bun run test:coverage` 可生成覆盖率报告。
+
+## 技术栈
+
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
+![Canvas](https://img.shields.io/badge/Canvas_2D-555555)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white)
+
+| 部分 | 实现 |
+| --- | --- |
+| 游戏 | TypeScript、Canvas 2D、OffscreenCanvas、requestAnimationFrame |
+| Web 页面与 API | Next.js App Router、React、Tailwind CSS |
+| 排行榜 | SQLite、better-sqlite3、Node.js HMAC |
+| 开发与测试 | Bun、ESLint、Vitest、Playwright |
+
+## 文档
+
+- [Logo 使用指南](docs/01-logo-usage.md)
+- [项目视觉档案](https://hexly.ai/logos/pew-game)
+- [游戏类型与场地定义](src/game/types.ts)
+
+## 许可证
+
+[MIT](LICENSE) © 2026 Zheng Li
