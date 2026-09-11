@@ -1,124 +1,90 @@
-import { createHmac, randomBytes } from "node:crypto";
-
-// server-side secret; in production this should be from env
-const SECRET = process.env.ANTICHEAT_SECRET ?? "pew-md-secret-2026";
-
-// track used session IDs to prevent replay attacks
-const usedSessions = new Set<string>();
-
-// max used sessions to keep in memory (prevent memory leak)
-const MAX_USED_SESSIONS = 10_000;
-
 export interface SessionToken {
   sessionId: string;
-  startTime: number; // unix timestamp ms
-  token: string; // HMAC signature
-}
-
-/** Generate a new session token for a game start */
-export function createSessionToken(): SessionToken {
-  const sessionId = randomBytes(16).toString("hex");
-  const startTime = Date.now();
-  const token = sign(sessionId, startTime);
-  return { sessionId, startTime, token };
-}
-
-/** Sign sessionId + startTime */
-function sign(sessionId: string, startTime: number): string {
-  return createHmac("sha256", SECRET)
-    .update(`${sessionId}:${startTime}`)
-    .digest("hex");
-}
-
-export interface ScoreSubmission {
-  name: string;
-  score: number;
-  wave: number;
-  sessionId: string;
-  startTime: number;
+  startTime: number; // Unix timestamp in milliseconds, signed by the server.
   token: string;
 }
 
-export interface ValidationResult {
-  valid: boolean;
-  error?: string;
-  duration?: number; // game duration in seconds
+export interface ScoreSubmission extends SessionToken {
+  name: string;
+  score: number;
+  wave: number;
 }
 
-/** Validate a score submission */
-export function validateSubmission(sub: ScoreSubmission): ValidationResult {
-  // 1. verify HMAC signature
-  const expected = sign(sub.sessionId, sub.startTime);
-  if (sub.token !== expected) {
-    return { valid: false, error: "invalid token" };
-  }
+export type ValidationResult =
+  | { valid: true; duration: number; submission: ScoreSubmission }
+  | { valid: false; error: string };
 
-  // 2. check session hasn't been used (prevent replay)
-  if (usedSessions.has(sub.sessionId)) {
-    return { valid: false, error: "session already used" };
-  }
+const encoder = new TextEncoder();
 
-  // 3. validate name format
-  const nameTrimmed = sub.name.trim();
-  if (nameTrimmed.length < 1 || nameTrimmed.length > 6) {
-    return { valid: false, error: "name must be 1-6 characters" };
+function hmacKey(secret: string): Promise<CryptoKey> {
+  if (typeof secret !== "string" || secret.length < 32) {
+    throw new Error("ANTICHEAT_SECRET must contain at least 32 characters");
   }
-  if (!/^[a-zA-Z0-9]+$/.test(nameTrimmed)) {
-    return { valid: false, error: "name must be alphanumeric" };
-  }
-
-  // 4. basic range checks
-  if (sub.score < 0 || sub.wave < 1) {
-    return { valid: false, error: "invalid score or wave" };
-  }
-
-  // 5. duration plausibility
-  const now = Date.now();
-  const durationMs = now - sub.startTime;
-  const durationSec = durationMs / 1000;
-
-  if (durationSec < 2) {
-    return { valid: false, error: "game too short" };
-  }
-
-  // 6. score vs wave plausibility
-  // each wave has BASE(5) + wave*3 enemies, each worth 10-30 points
-  // generous upper bound: 30 pts * (5 + wave*3) per wave, summed
-  const maxScoreForWave = calculateMaxPlausibleScore(sub.wave);
-  if (sub.score > maxScoreForWave) {
-    return { valid: false, error: "score too high for wave" };
-  }
-
-  // 7. score vs duration plausibility
-  // max ~200 points per second is extremely generous
-  if (sub.score > durationSec * 200) {
-    return { valid: false, error: "score rate too high" };
-  }
-
-  // mark session as used
-  usedSessions.add(sub.sessionId);
-  // prevent memory leak
-  if (usedSessions.size > MAX_USED_SESSIONS) {
-    const first = usedSessions.values().next().value;
-    if (first) usedSessions.delete(first);
-  }
-
-  return { valid: true, duration: durationSec };
+  return crypto.subtle.importKey(
+    "raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false,
+    ["sign", "verify"],
+  );
 }
 
-/** Calculate generous upper bound for score at a given wave */
-function calculateMaxPlausibleScore(wave: number): number {
-  let total = 0;
-  for (let w = 1; w <= wave; w++) {
-    const enemiesInWave = 5 + w * 3;
-    // max 30 points per enemy (tank score)
-    total += enemiesInWave * 30;
-  }
-  // add 50% buffer for nuke kills of spawned-but-not-counted enemies
-  return Math.floor(total * 1.5);
+function hex(bytes: Uint8Array): string {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-/** Reset used sessions (for testing) */
-export function _resetUsedSessions(): void {
-  usedSessions.clear();
+/** A signed game start needs no database write or server-side session store. */
+export async function createSessionToken(secret: string): Promise<SessionToken> {
+  const sessionId = hex(crypto.getRandomValues(new Uint8Array(16)));
+  const startTime = Date.now();
+  const signature = await crypto.subtle.sign(
+    "HMAC", await hmacKey(secret), encoder.encode(`${sessionId}:${startTime}`),
+  );
+  return { sessionId, startTime, token: hex(new Uint8Array(signature)) };
+}
+
+/** Validate untrusted JSON. D1's unique session_id enforces replay protection. */
+export async function validateSubmission(value: unknown, secret: string): Promise<ValidationResult> {
+  const invalid = (error: string): ValidationResult => ({ valid: false, error });
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return invalid("invalid submission");
+  }
+  const { name, score, wave, sessionId, startTime, token } = value as Record<string, unknown>;
+  if (typeof name !== "string") return invalid("invalid name");
+  const trimmedName = name.trim();
+  if (trimmedName.length < 1 || trimmedName.length > 6) {
+    return invalid("name must be 1-6 characters");
+  }
+  if (!/^[a-zA-Z0-9]+$/.test(trimmedName)) return invalid("name must be alphanumeric");
+  if (
+    typeof score !== "number" || !Number.isSafeInteger(score) || score < 0 ||
+    typeof wave !== "number" || !Number.isSafeInteger(wave) || wave < 1
+  ) {
+    return invalid("invalid score or wave");
+  }
+  if (
+    typeof sessionId !== "string" || !/^[a-f0-9]{32}$/.test(sessionId) ||
+    typeof startTime !== "number" || !Number.isSafeInteger(startTime) || startTime < 0 ||
+    typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)
+  ) {
+    return invalid("invalid token");
+  }
+  const signature = Uint8Array.from({ length: 32 }, (_, i) =>
+    Number.parseInt(token.slice(i * 2, i * 2 + 2), 16),
+  );
+  // Native HMAC verification avoids comparing secret-derived strings in JS.
+  const verified = await crypto.subtle.verify(
+    "HMAC", await hmacKey(secret), signature, encoder.encode(`${sessionId}:${startTime}`),
+  );
+  if (!verified) return invalid("invalid token");
+
+  const duration = (Date.now() - startTime) / 1000;
+  if (duration < 2) return invalid("game too short");
+  // Equivalent to summing 30 * (5 + 3*w) per wave, plus the existing 50% buffer.
+  // Closed form keeps work constant even for an attacker-supplied large wave.
+  const maxScore = Math.floor(45 * (5 * wave + 3 * wave * (wave + 1) / 2));
+  if (score > maxScore) return invalid("score too high for wave");
+  if (score > duration * 200) return invalid("score rate too high");
+  return {
+    valid: true,
+    duration,
+    submission: { name: trimmedName.toUpperCase(), score, wave, sessionId, startTime, token },
+  };
 }

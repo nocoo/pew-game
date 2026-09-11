@@ -10,6 +10,7 @@ const reactVersion = createRequire(import.meta.url)("react/package.json").versio
 const eslintConfig = [
   ...nextConfig,
   {
+    files: ["**/*.{ts,tsx}"],
     settings: {
       react: { version: reactVersion },
     },

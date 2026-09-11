@@ -36,6 +36,9 @@ yarn-error.log*
 
 # env files
 .env*.local
+.dev.vars*
+.env
+/.wrangler/
 
 # vercel
 .vercel

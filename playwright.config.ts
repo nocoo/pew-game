@@ -8,14 +8,14 @@ export default defineConfig({
   workers: process.env.CI ? 1 : 2,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:23000",
+    baseURL: "http://127.0.0.1:27050",
     trace: "on-first-retry",
     headless: true,
   },
   webServer: {
-    command: "bun run dev -- -p 23000",
-    port: 23000,
-    reuseExistingServer: !process.env.CI,
+    command: "bun scripts/local-worker.ts test",
+    port: 27050,
+    reuseExistingServer: false,
     timeout: 60_000,
   },
 });

@@ -54,9 +54,7 @@ export class GameEngine {
     this.canvas = canvas;
     this.canvas.width = CANVAS_WIDTH;
     this.canvas.height = CANVAS_HEIGHT;
-    // CSS scaling with pixelated rendering
-    this.canvas.style.width = `${CANVAS_WIDTH}px`;
-    this.canvas.style.height = `${CANVAS_HEIGHT}px`;
+    // Keep the native backing resolution; the page controls responsive sizing.
     this.canvas.style.imageRendering = "pixelated";
 
     const ctx = canvas.getContext("2d");
@@ -100,9 +98,23 @@ export class GameEngine {
   }
 
   start(): void {
-    this.input.bind();
     this.lastTime = performance.now();
     this.loop(this.lastTime);
+  }
+
+  startRun(): void {
+    if (this.state.phase === "playing") return;
+    this.input.unbind();
+    this.input.bind();
+    this.state = this.createInitialState();
+    this.state.phase = "playing";
+    this.onScoreChange?.(0);
+    this.onLivesChange?.(this.state.player.lives);
+    this.onWaveChange?.(1);
+  }
+
+  setTouchKey(key: string, down: boolean): void {
+    if (this.state.phase === "playing") this.input.setTouchKey(key, down);
   }
 
   stop(): void {
@@ -119,7 +131,6 @@ export class GameEngine {
 
     this.update(dt);
     this.render();
-    this.input.endFrame();
 
     this.animFrameId = requestAnimationFrame(this.loop);
   };
@@ -127,26 +138,7 @@ export class GameEngine {
   private update(dt: number): void {
     const { state } = this;
 
-    if (state.phase === "title") {
-      // press any key to start
-      if (this.input.isJustDown(" ") || this.input.isJustDown("enter")) {
-        state.phase = "playing";
-        this.onLivesChange?.(state.player.lives);
-        this.onWaveChange?.(1);
-      }
-      return;
-    }
-
-    if (state.phase === "gameover") {
-      if (this.input.isJustDown(" ") || this.input.isJustDown("enter")) {
-        this.state = this.createInitialState();
-        this.state.phase = "playing";
-        this.onScoreChange?.(0);
-        this.onLivesChange?.(this.state.player.lives);
-        this.onWaveChange?.(1);
-      }
-      return;
-    }
+    if (state.phase !== "playing") return;
 
     // --- playing ---
     state.time += dt;
@@ -235,7 +227,9 @@ export class GameEngine {
           enemy.alive = false;
           if (!state.player.alive) {
             state.phase = "gameover";
+            this.input.unbind();
             this.onGameOver?.(state.score);
+            break;
           }
         }
       }
@@ -361,34 +355,15 @@ export class GameEngine {
   }
 
   private renderTitle(ctx: OffscreenCanvasRenderingContext2D): void {
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-    ctx.fillStyle = "#f5f0e1";
-    ctx.font = "bold 16px monospace";
-    ctx.textAlign = "center";
-    ctx.fillText("PEW.MD", GAME_WIDTH / 2, GAME_HEIGHT / 2 - 20);
-
-    ctx.font = "8px monospace";
-    ctx.fillText("Press SPACE to start", GAME_WIDTH / 2, GAME_HEIGHT / 2 + 10);
-    ctx.fillText("WASD / Arrows to move & shoot", GAME_WIDTH / 2, GAME_HEIGHT / 2 + 25);
+    drawSprite(ctx, getCowboySprite({ x: 0, y: 1 }), GAME_WIDTH / 2 - 8, GAME_HEIGHT - 62);
+    drawSprite(ctx, ENEMY_BASIC, 52, 72);
+    drawSprite(ctx, ENEMY_BASIC, GAME_WIDTH - 68, 124);
   }
 
   private renderGameOver(ctx: OffscreenCanvasRenderingContext2D): void {
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
+    // Accessible HTML owns the result and score form above the canvas.
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-    ctx.fillStyle = "#c0392b";
-    ctx.font = "bold 14px monospace";
-    ctx.textAlign = "center";
-    ctx.fillText("GAME OVER", GAME_WIDTH / 2, GAME_HEIGHT / 2 - 15);
-
-    ctx.fillStyle = "#f5f0e1";
-    ctx.font = "10px monospace";
-    ctx.fillText(`Score: ${this.state.score}`, GAME_WIDTH / 2, GAME_HEIGHT / 2 + 5);
-
-    ctx.font = "8px monospace";
-    ctx.fillText("Press SPACE to retry", GAME_WIDTH / 2, GAME_HEIGHT / 2 + 25);
   }
 
   /** Scale the offscreen canvas onto the visible canvas */

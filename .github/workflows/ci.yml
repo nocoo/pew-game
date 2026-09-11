@@ -12,10 +12,9 @@ jobs:
     uses: nocoo/base-ci/.github/workflows/bun-quality.yml@aec4adc1a817c56790d1698329ef9398a15a754a  # v2026.5
     with:
         ignore-scripts: true
-        trusted-native-deps: "better-sqlite3"
         pre-command: "bun run build"
         test-command: "bun run test:coverage"
-        typecheck-command: "true"
+        typecheck-command: "bun run typecheck"
         enable-security: "true"
         enable-l2: "true"
         l2-command: "bun run test:e2e"
