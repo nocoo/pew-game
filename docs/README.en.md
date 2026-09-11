@@ -76,13 +76,13 @@ bun run build
 bun run start
 ```
 
-The [Dockerfile](../Dockerfile) uses `/app/data/pew.db`. Mount persistent storage at `/app/data` and set `ANTICHEAT_SECRET` when deploying. Repeated-submission records currently live in the server process's memory.
+The [Dockerfile](../Dockerfile) uses `/app/data/pew.db`. Mount persistent storage at `/app/data` and set `ANTICHEAT_SECRET` when deploying. Repeated-submission records currently live in the server process's memory. The service provides a public health check endpoint `GET /api/live` with `Cache-Control: no-store`, returning HTTP 200 when the database is healthy and HTTP 503 on failure.
 
 ```text
 src/game/          Input, game loop, pixel drawing, and combat rules
 src/components/    Canvas container, score form, and leaderboard
 src/lib/           SQLite and score validation
-src/app/api/       Session token and score APIs
+src/app/api/       Session token, score APIs, and health check (/api/live)
 src/__tests__/     Unit and game-loop tests
 e2e/bdd/           Browser page smoke test
 ```

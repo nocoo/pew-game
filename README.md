@@ -76,13 +76,13 @@ bun run build
 bun run start
 ```
 
-仓库提供 [Dockerfile](Dockerfile)，容器使用 `/app/data/pew.db`；部署时为 `/app/data` 挂载持久卷并设置 `ANTICHEAT_SECRET`。当前重复提交记录保存在服务进程内存中。
+仓库提供 [Dockerfile](Dockerfile)，容器使用 `/app/data/pew.db`；部署时为 `/app/data` 挂载持久卷并设置 `ANTICHEAT_SECRET`。当前重复提交记录保存在服务进程内存中。服务提供公开健康检查接口 `GET /api/live`，带有 `Cache-Control: no-store`，数据库正常时返回 HTTP 200，故障时返回 HTTP 503。
 
 ```text
 src/game/          输入、游戏循环、像素绘图与战斗规则
 src/components/    Canvas 容器、成绩表单与排行榜
 src/lib/           SQLite 和成绩校验
-src/app/api/       会话 token 与成绩 API
+src/app/api/       会话 token、成绩 API 与健康检查 (/api/live)
 src/__tests__/     单元与游戏循环测试
 e2e/bdd/           浏览器页面冒烟测试
 ```

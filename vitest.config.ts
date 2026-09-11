@@ -20,6 +20,7 @@ export default defineConfig({
         "src/game/powerup.ts",
         "src/game/wave.ts",
         "src/lib/anticheat.ts",
+        "src/app/api/live/route.ts",
       ],
       thresholds: {
         statements: 95,
