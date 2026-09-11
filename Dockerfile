@@ -26,6 +26,7 @@ ENV HOSTNAME=0.0.0.0
 # Copy standalone output
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
+COPY --from=build /app/public ./public
 
 # Copy better-sqlite3 native addon (needed at runtime)
 COPY --from=deps /app/node_modules/better-sqlite3 ./node_modules/better-sqlite3
