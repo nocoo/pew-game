@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      source-run-id:
+        description: "Successful CI run ID to deploy"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  deploy:
+    name: Deploy Worker
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    uses: nocoo/base-ci/.github/workflows/deploy-worker.yml@ad43150de3a2be2fa464b5cd2f921dc4fa9f8f0f
+    with:
+      expected-workflow-path: ".github/workflows/ci.yml"
+      expected-workflow-name: "CI"
+      source-run-id: ${{ github.event_name == 'workflow_run' && format('{0}', github.event.workflow_run.id) || inputs.source-run-id }}
+      runtime-version: "1.4.2"
+      install-policy: "blocked"
+      wrangler-version: "4.131.1"
+      deploy-script: bun run deploy
+      environment: production
+      concurrency-group: deploy-pew-game-production
+      timeout-minutes: 20
+      verify-command: |
+        EXPECTED=$(jq -r .version package.json)
+        HTTP=$(curl -fsS -o /tmp/live.json -w "%{http_code}" https://pew.hexly.ai/api/live || echo "000")
+        test "$HTTP" = "200"
+        jq -e --arg v "$EXPECTED" '.status == "ok" and .version == $v and .database.connected == true' /tmp/live.json
+      verify-retries: 6
+      verify-retry-seconds: 5
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}

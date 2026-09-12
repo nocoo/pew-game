@@ -1,143 +1,116 @@
-import { describe, test, expect, beforeEach } from "vitest";
-import {
-  createSessionToken,
-  validateSubmission,
-  _resetUsedSessions,
-} from "@/lib/anticheat";
+import { createHmac } from "node:crypto";
+import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
+import { createSessionToken, validateSubmission } from "@/lib/anticheat";
 import type { ScoreSubmission } from "@/lib/anticheat";
 
-function validSubmission(overrides: Partial<ScoreSubmission> = {}): ScoreSubmission {
-  const session = createSessionToken();
-  return {
-    name: "ACE",
-    score: 100,
-    wave: 3,
-    sessionId: session.sessionId,
-    startTime: session.startTime - 30_000, // pretend game started 30s ago
-    token: "", // will be invalid unless we fix it
-    ...overrides,
-  };
+const SECRET = "unit-test-only-secret-never-used-in-production";
+const START = Date.UTC(2026, 8, 1);
+
+async function submission(overrides: Partial<ScoreSubmission> = {}): Promise<ScoreSubmission> {
+  vi.mocked(Date.now).mockReturnValue(START);
+  const session = await createSessionToken(SECRET);
+  vi.mocked(Date.now).mockReturnValue(START + 30_000);
+  return { ...session, name: "ACE", score: 100, wave: 3, ...overrides };
 }
 
-describe("anticheat", () => {
-  beforeEach(() => {
-    _resetUsedSessions();
+describe("stateless score validation", () => {
+  beforeEach(() => { vi.spyOn(Date, "now").mockReturnValue(START); });
+  afterEach(() => { vi.restoreAllMocks(); });
+
+  test("creates independent random sessions with interoperable HMAC-SHA256 signatures", async () => {
+    const a = await createSessionToken(SECRET);
+    const b = await createSessionToken(SECRET);
+    expect(a.sessionId).toMatch(/^[a-f0-9]{32}$/);
+    expect(a.sessionId).not.toBe(b.sessionId);
+    expect(a.startTime).toBe(START);
+    expect(a.token).toBe(createHmac("sha256", SECRET).update(`${a.sessionId}:${START}`).digest("hex"));
   });
 
-  test("createSessionToken returns valid session", () => {
-    const session = createSessionToken();
-    expect(session.sessionId).toHaveLength(32); // 16 bytes hex
-    expect(session.startTime).toBeGreaterThan(0);
-    expect(session.token).toHaveLength(64); // sha256 hex
+  test("normalizes names and does not consume sessions before D1 saves a score", async () => {
+    const sub = await submission({ name: "  aCe9  " });
+    const expected = { valid: true, duration: 30, submission: { ...sub, name: "ACE9" } };
+    expect(await validateSubmission(sub, SECRET)).toEqual(expected);
+    expect(await validateSubmission(sub, SECRET)).toEqual(expected);
   });
 
-  test("valid submission passes validation", () => {
-    const session = createSessionToken();
-    // backdating startTime to simulate a 30s game
-    const sub: ScoreSubmission = {
-      name: "ACE",
-      score: 100,
-      wave: 3,
-      sessionId: session.sessionId,
-      startTime: session.startTime,
-      token: session.token,
-    };
-
-    // we need the real token which is signed with the actual startTime
-    // so the duration will be ~0ms which should fail "game too short"
-    // let's test individually
-
-    const result = validateSubmission(sub);
-    // should fail because duration is ~0 seconds
-    expect(result.valid).toBe(false);
-    expect(result.error).toBe("game too short");
+  test.each(["", "short"])("refuses an absent or weak signing secret: %j", async (secret) => {
+    await expect(createSessionToken(secret)).rejects.toThrow("ANTICHEAT_SECRET");
   });
 
-  test("tampered token is rejected", () => {
-    const session = createSessionToken();
-    const sub: ScoreSubmission = {
-      name: "ACE",
-      score: 100,
-      wave: 3,
-      sessionId: session.sessionId,
-      startTime: session.startTime,
-      token: "tampered-token-value",
-    };
-
-    const result = validateSubmission(sub);
-    expect(result.valid).toBe(false);
-    expect(result.error).toBe("invalid token");
+  test("rejects token, timestamp, session-id, and signing-key tampering", async () => {
+    const sub = await submission();
+    for (const changed of [
+      { ...sub, token: sub.token[0] === "0" ? `1${sub.token.slice(1)}` : `0${sub.token.slice(1)}` },
+      { ...sub, startTime: sub.startTime - 1000 },
+      { ...sub, sessionId: "a".repeat(32) },
+    ]) {
+      expect(await validateSubmission(changed, SECRET)).toEqual({ valid: false, error: "invalid token" });
+    }
+    expect(await validateSubmission(sub, `${SECRET}-different`)).toEqual({ valid: false, error: "invalid token" });
   });
 
-  test("replay attack is rejected", () => {
-    const session = createSessionToken();
-    // manually set startTime in the past so duration check passes
-    // but we can't re-sign, so we need a different approach
-    // Instead, let's create a valid session and manually bypass duration
-    // For replay test, we just need the same sessionId to be rejected on second use
-
-    // We'll test by directly manipulating the submission
-    // This will fail for other reasons, but let's test the concept:
-    // If we could submit twice, the second should fail with "session already used"
-
-    // Actually, let's test with a proper session
-    const sub2: ScoreSubmission = {
-      name: "ACE",
-      score: 50,
-      wave: 2,
-      sessionId: session.sessionId,
-      startTime: session.startTime,
-      token: session.token,
-    };
-
-    // First call fails with "game too short" but consumes nothing (fails before marking)
-    const r1 = validateSubmission(sub2);
-    expect(r1.valid).toBe(false);
-    // Session should NOT be marked as used since validation failed
+  test.each([null, undefined, [], "hello", 1, false])("rejects non-object JSON %j", async (value) => {
+    expect(await validateSubmission(value, SECRET)).toEqual({ valid: false, error: "invalid submission" });
   });
 
-  test("short name is rejected", () => {
-    const session = createSessionToken();
-    const sub: ScoreSubmission = {
-      name: "AB",
-      score: 100,
-      wave: 3,
-      sessionId: session.sessionId,
-      startTime: session.startTime,
-      token: session.token,
-    };
-
-    const result = validateSubmission(sub);
-    // Will fail at token check first since we need time to pass
-    // but the token is valid here... hmm, it will fail at "game too short"
-    // Let's just test the name validation directly by checking after token
-    expect(result.valid).toBe(false);
+  test("rejects invalid name types and ASCII name boundaries", async () => {
+    const sub = await submission();
+    for (const name of [null, undefined, 42, {}, []]) {
+      expect(await validateSubmission({ ...sub, name }, SECRET)).toEqual({ valid: false, error: "invalid name" });
+    }
+    for (const name of ["", " ", "ABCDEFG"]) {
+      expect(await validateSubmission({ ...sub, name }, SECRET)).toEqual({ valid: false, error: "name must be 1-6 characters" });
+    }
+    for (const name of ["A!B", "<img>", "ß", "中文", "A B"]) {
+      expect(await validateSubmission({ ...sub, name }, SECRET)).toEqual({ valid: false, error: "name must be alphanumeric" });
+    }
+    for (const name of ["A", "ABC123"]) {
+      expect((await validateSubmission({ ...sub, name }, SECRET)).valid).toBe(true);
+    }
   });
 
-  test("non-alphanumeric name is rejected", () => {
-    const sub = validSubmission({ name: "A<>B" });
-    const result = validateSubmission(sub);
-    expect(result.valid).toBe(false);
+  test("requires safe non-negative integer scores and positive integer waves", async () => {
+    const sub = await submission();
+    for (const field of ["score", "wave"] as const) {
+      for (const value of [null, undefined, "3", true, -1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+        expect(await validateSubmission({ ...sub, [field]: value }, SECRET)).toEqual({ valid: false, error: "invalid score or wave" });
+      }
+    }
+    expect(await validateSubmission({ ...sub, wave: 0 }, SECRET)).toEqual({ valid: false, error: "invalid score or wave" });
+    expect((await validateSubmission({ ...sub, score: 0 }, SECRET)).valid).toBe(true);
   });
 
-  test("negative score is rejected", () => {
-    const sub = validSubmission({ score: -1 });
-    const result = validateSubmission(sub);
-    expect(result.valid).toBe(false);
+  test("requires exact token encoding and a safe signed timestamp", async () => {
+    const sub = await submission();
+    for (const [field, value] of [
+      ["sessionId", null], ["sessionId", "short"], ["sessionId", "g".repeat(32)],
+      ["token", 42], ["token", ""], ["token", "g".repeat(64)],
+      ["startTime", null], ["startTime", "123"], ["startTime", -1],
+      ["startTime", 1.5], ["startTime", NaN], ["startTime", Infinity],
+    ]) {
+      expect(await validateSubmission({ ...sub, [String(field)]: value }, SECRET)).toEqual({ valid: false, error: "invalid token" });
+    }
   });
 
-  test("impossible score for wave is rejected", () => {
-    const session = createSessionToken();
-    const sub: ScoreSubmission = {
-      name: "CHEAT",
-      score: 999999,
-      wave: 1,
-      sessionId: session.sessionId,
-      startTime: session.startTime,
-      token: session.token,
-    };
+  test("rejects games shorter than two seconds and future start times", async () => {
+    const sub = await submission();
+    for (const elapsed of [-1000, 0, 1999]) {
+      vi.mocked(Date.now).mockReturnValue(START + elapsed);
+      expect(await validateSubmission(sub, SECRET)).toEqual({ valid: false, error: "game too short" });
+    }
+    vi.mocked(Date.now).mockReturnValue(START + 2000);
+    expect((await validateSubmission(sub, SECRET)).valid).toBe(true);
+  });
 
-    const result = validateSubmission(sub);
-    expect(result.valid).toBe(false);
+  test.each([[1, 360], [2, 855], [3, 1485], [5, 3150]])("preserves the score ceiling at wave %i", async (wave, maximum) => {
+    const sub = await submission({ wave, score: maximum });
+    expect((await validateSubmission(sub, SECRET)).valid).toBe(true);
+    expect(await validateSubmission({ ...sub, score: maximum + 1 }, SECRET)).toEqual({ valid: false, error: "score too high for wave" });
+  });
+
+  test("enforces the rate ceiling and handles enormous wave numbers in constant time", async () => {
+    const sub = await submission({ wave: Number.MAX_SAFE_INTEGER, score: 6000 });
+    expect((await validateSubmission(sub, SECRET)).valid).toBe(true);
+    expect(await validateSubmission({ ...sub, score: 6001 }, SECRET)).toEqual({ valid: false, error: "score rate too high" });
   });
 });

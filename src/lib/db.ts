@@ -1,33 +1,4 @@
-import Database from "better-sqlite3";
-import path from "node:path";
-
-const DB_PATH = process.env.DATABASE_PATH || path.join(process.cwd(), "pew.db");
-
-let _db: Database.Database | null = null;
-
-export function getDb(): Database.Database {
-  if (!_db) {
-    _db = new Database(DB_PATH);
-    _db.pragma("journal_mode = WAL");
-    _db.pragma("foreign_keys = ON");
-    migrate(_db);
-  }
-  return _db;
-}
-
-function migrate(db: Database.Database): void {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS scores (
-      id        INTEGER PRIMARY KEY AUTOINCREMENT,
-      name      TEXT    NOT NULL CHECK(length(name) BETWEEN 1 AND 6),
-      score     INTEGER NOT NULL CHECK(score >= 0),
-      wave      INTEGER NOT NULL CHECK(wave >= 1),
-      duration  REAL    NOT NULL CHECK(duration > 0),
-      created   TEXT    NOT NULL DEFAULT (datetime('now'))
-    )
-  `);
-  db.exec("CREATE INDEX IF NOT EXISTS idx_scores_score ON scores(score DESC)");
-}
+import type { ScoreSubmission } from "./anticheat";
 
 export interface ScoreRow {
   id: number;
@@ -38,28 +9,26 @@ export interface ScoreRow {
   created: string;
 }
 
-/** Get top N scores */
-export function getTopScores(limit = 10): ScoreRow[] {
-  const db = getDb();
-  return db
-    .prepare("SELECT * FROM scores ORDER BY score DESC, created ASC LIMIT ?")
-    .all(limit) as ScoreRow[];
+// Never publish the session identifier used for persistent replay protection.
+const columns = "id, name, score, wave, duration, created";
+const ranking = `SELECT ${columns} FROM scores ORDER BY score DESC, created ASC, id ASC LIMIT 10`;
+
+export async function getTopScores(db: D1Database): Promise<ScoreRow[]> {
+  return (await db.prepare(ranking).all<ScoreRow>()).results;
 }
 
-/** Insert a new score; returns the inserted row */
-export function insertScore(
-  name: string,
-  score: number,
-  wave: number,
-  duration: number,
-): ScoreRow {
-  const db = getDb();
-  const result = db
-    .prepare(
-      "INSERT INTO scores (name, score, wave, duration) VALUES (?, ?, ?, ?)",
-    )
-    .run(name, score, wave, duration);
-  return db
-    .prepare("SELECT * FROM scores WHERE id = ?")
-    .get(result.lastInsertRowid) as ScoreRow;
+export async function insertScore(db: D1Database, sub: ScoreSubmission, duration: number) {
+  // D1 batches are transactional: the session is consumed only with a saved score.
+  // The UNIQUE constraint also holds across concurrent requests and Worker restarts.
+  // A matching retry returns the original row; the no-op update preserves its fields.
+  const [inserted, scores] = await db.batch<ScoreRow>([
+    db.prepare(`INSERT INTO scores (name, score, wave, duration, session_id)
+      VALUES (?, ?, ?, ?, ?)
+      ON CONFLICT(session_id) DO UPDATE SET session_id = excluded.session_id
+      WHERE scores.name = excluded.name AND scores.score = excluded.score AND scores.wave = excluded.wave
+      RETURNING ${columns}`)
+      .bind(sub.name, sub.score, sub.wave, duration, sub.sessionId),
+    db.prepare(ranking),
+  ]);
+  return { inserted: inserted.results[0] ?? null, scores: scores.results };
 }

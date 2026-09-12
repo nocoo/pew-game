@@ -9,16 +9,16 @@ on:
 
 jobs:
   ci:
-    uses: nocoo/base-ci/.github/workflows/bun-quality.yml@aec4adc1a817c56790d1698329ef9398a15a754a  # v2026.5
+    uses: nocoo/base-ci/.github/workflows/quality.yml@ad43150de3a2be2fa464b5cd2f921dc4fa9f8f0f
     with:
-        ignore-scripts: true
-        trusted-native-deps: "better-sqlite3"
-        pre-command: "bun run build"
-        test-command: "bun run test:coverage"
-        typecheck-command: "true"
-        enable-security: "true"
-        enable-l2: "true"
-        l2-command: "bun run test:e2e"
-        enable-l3: "true"
-        l3-command: "bun run test:e2e:bdd"
-        l3-browser: "chromium"
+      runtime-version: "1.4.2"
+      install-policy: "blocked"
+      coverage-path: "coverage"
+      prepare-command: "bun run build"
+      test-command: "bun run test:coverage"
+      typecheck-command: "bun run typecheck"
+      l2: true
+      l2-command: "bun run test:e2e"
+      l3: true
+      l3-command: "bun run test:e2e:bdd"
+      l3-browser: "chromium"

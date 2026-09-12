@@ -1,7 +1,0 @@
-node_modules
-.next
-*.db
-*.db-shm
-*.db-wal
-.git
-.DS_Store

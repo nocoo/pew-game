@@ -1,15 +1,13 @@
-// keyboard input manager — tracks pressed keys each frame
+// Keyboard and touch input share the same normalized movement rules.
 
 export class InputManager {
   private readonly pressed = new Set<string>();
-  private readonly justPressed = new Set<string>();
+  private readonly touchPressed = new Set<string>();
   private bound = false;
 
   private readonly onKeyDown = (e: KeyboardEvent): void => {
+    if (e.target instanceof Element && e.target.closest("input, textarea, select, button, a, [contenteditable='true']")) return;
     const key = e.key.toLowerCase();
-    if (!this.pressed.has(key)) {
-      this.justPressed.add(key);
-    }
     this.pressed.add(key);
 
     // prevent arrow keys from scrolling the page
@@ -22,32 +20,34 @@ export class InputManager {
     this.pressed.delete(e.key.toLowerCase());
   };
 
+  private readonly clear = (): void => {
+    this.pressed.clear();
+    this.touchPressed.clear();
+  };
+
+  setTouchKey(key: string, down: boolean): void {
+    if (down) this.touchPressed.add(key);
+    else this.touchPressed.delete(key);
+  }
+
   bind(): void {
     if (this.bound) return;
     window.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("keyup", this.onKeyUp);
+    window.addEventListener("blur", this.clear);
     this.bound = true;
   }
 
   unbind(): void {
     window.removeEventListener("keydown", this.onKeyDown);
     window.removeEventListener("keyup", this.onKeyUp);
-    this.pressed.clear();
-    this.justPressed.clear();
+    window.removeEventListener("blur", this.clear);
+    this.clear();
     this.bound = false;
   }
 
-  /** Call at the end of each frame to reset just-pressed state */
-  endFrame(): void {
-    this.justPressed.clear();
-  }
-
   isDown(key: string): boolean {
-    return this.pressed.has(key.toLowerCase());
-  }
-
-  isJustDown(key: string): boolean {
-    return this.justPressed.has(key.toLowerCase());
+    return this.pressed.has(key.toLowerCase()) || this.touchPressed.has(key.toLowerCase());
   }
 
   /** Returns normalized direction vector from WASD / arrow keys */

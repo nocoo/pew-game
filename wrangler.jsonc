@@ -1,0 +1,54 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pew-game",
+  "account_id": "d51a8fde361e4be31db17d8c56737c1f",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./out",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "routes": [{ "pattern": "pew.hexly.ai", "custom_domain": true }],
+  "workers_dev": false,
+  "preview_urls": false,
+  "secrets": { "required": ["ANTICHEAT_SECRET"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pew-game",
+      "database_id": "45af91ca-2d7d-4fdd-9370-50931d1c88be",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "env": {
+    "local": {
+      "name": "pew-game-local",
+      "routes": [],
+      "secrets": { "required": ["ANTICHEAT_SECRET"] },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "pew-game-local",
+          "database_id": "00000000-0000-0000-0000-000000000001",
+          "migrations_dir": "migrations"
+        }
+      ]
+    },
+    "test": {
+      "name": "pew-game-test",
+      "routes": [],
+      "secrets": { "required": ["ANTICHEAT_SECRET"] },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "pew-game-test",
+          "database_id": "00000000-0000-0000-0000-000000000002",
+          "migrations_dir": "migrations"
+        }
+      ]
+    }
+  }
+}
