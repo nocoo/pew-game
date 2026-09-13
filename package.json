@@ -18,20 +18,20 @@
     "typecheck": "bun run types && tsc --noEmit && tsc --project tsconfig.worker.json"
   },
   "dependencies": {
-    "next": "16.3.4",
+    "next": "16.3.5",
     "postcss": "^8.5.28",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "26.5.0",
     "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.2.7",
+    "@types/react-dom": "19.3.0",
     "@vitest/coverage-v8": "5.0.0",
     "eslint": "^10.10.0",
-    "eslint-config-next": "16.3.4",
+    "eslint-config-next": "16.3.5",
     "husky": "^9.1.7",
     "tailwindcss": "^4.3.3",
     "typescript": "6.0.3",
