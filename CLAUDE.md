@@ -1,44 +1,96 @@
 # Pew Game
 
-- Repository: `nocoo/pew-game`; website: `https://pew.hexly.ai`.
-- Worker and independent D1 database: `pew-game`, configured in `wrangler.jsonc`.
-- This is the pixel shooter, separate from `nocoo/pew` / `pew.md`. Do not reuse that application's infrastructure or the `hexly-status` database.
+Browser pixel shooter with a persistent leaderboard served by Cloudflare Workers and D1.
+Profile: ts-worker-web.
+Direction: [game/interaction contract](docs/02-game-contract.md), [README.md](README.md).
 
-## Architecture
+## Sources of Truth
 
-Next.js statically exports the existing React/Canvas game to `out/`. Workers Static Assets serves the page; `worker/index.ts` handles `/api/token`, `/api/scores`, and `/api/live` directly. Keep this deployment free of an application server, adapter, container, native SQLite dependency, or persistent volume.
+This handbook is the contract; hooks, CI and config enforce it. Raise weaker enforcement to match. Frameworks must not replace this handbook.
 
-D1 migrations live in `migrations/`. Rankings persist indefinitely; there is no cleanup cron. Status's seven-day observation retention is a different database policy. Never import a local `pew.db` or write test scores to production without explicit authorization.
+| Fact | Where |
+| --- | --- |
+| Human docs | [README.md](README.md), English README, [logo guide](docs/01-logo-usage.md) |
+| Version | Root `package.json`; `/api/live` reads it |
+| Runtime | `wrangler.jsonc`, `worker/index.ts`, `migrations/` |
+| Enforcement | `.husky/`, CI, Vitest/Playwright, `scripts/local-worker.ts` |
+| Secrets | `ANTICHEAT_SECRET` Worker Secret; ignored local/test signing files |
+| Accidents | [Retrospective.md](Retrospective.md) |
 
-The client submits plausibility-checked scores, not authoritative game replays. Preserve the existing game rules and score ceilings. Web Crypto signs and verifies tokens using the `ANTICHEAT_SECRET` binding. Never add a fallback secret or log it. Score insertion and `session_id UNIQUE` replay protection must remain atomic in D1 across requests, failures, and restarts. Identical signed retries with the same normalized name, score, and wave return the original public score, preserving its ID, duration, and creation time; conflicting reuse returns HTTP 403. Keep the successful HTTP 201 response shape for both the initial save and identical retries. Verify signatures before accepting retries, and never consume a session on a rolled-back write. Keep session IDs and tokens out of public leaderboard results. Validate unknown input, bound request bodies, and keep work independent of attacker-supplied wave counts.
+## Project Invariants
 
-All APIs use `Cache-Control: no-store`. Public `GET /api/live` must remain unauthenticated and perform a real `scores` table query, with HTTP 200/503 and `{status, version, database: {connected}}`. Missing signing configuration also makes health fail. Never expose raw database errors.
+- This is `nocoo/pew-game` / `pew.hexly.ai`, distinct from `nocoo/pew` / `pew.md`. Worker and D1 are both `pew-game`; never share `hexly-status` resources or its retention policy.
+- Next exports to `out/`; Worker Static Assets serves it. Native Worker handles token/scores/live APIs. Keep this free of an app server, adapter, container, native SQLite production dependency or persistent volume.
+- Rankings persist indefinitely with no cleanup cron. No local `pew.db` imports or automated production score writes.
+- Preserve plausibility limits, bounded input/work and HMAC signature verification before retries. `session_id UNIQUE` and score writes remain atomic, including failures/restarts/concurrency; no fallback secret or logged tokens.
+- An identical signed retry returns the original public score with HTTP 201; conflicting normalized name/score/wave returns 403. Preserve ID/duration/created time and hide session IDs/tokens.
+- All APIs use no-store. Public `/api/live` queries the real scores table and signing configuration, returns version/database 200/503 and no private error details.
+- Preserve exact game/keyboard/touch/save/practice behavior, 320×320 coordinates / 640×640 backing canvas, independent game loop and walnut/brass identity in [game contract](docs/02-game-contract.md). Keep English/Chinese controls and shared screenshot aligned.
 
-## Frontend and interaction
+## Stack / Layout
 
-Preserve the original logo and the walnut, brass, and pixel appearance of the prairie arcade. Use responsive layout for desktop, tablet, and phone screens. The engine renders in native 320 × 320 game coordinates onto a 640 × 640 canvas backing; CSS controls the displayed size. Keep the game loop independent of React and the accessible start/result controls in HTML.
+| Component | Choice |
+| --- | --- |
+| Game/UI | TypeScript, Canvas/OffscreenCanvas, React/Next static export, Tailwind |
+| API/data | Worker Fetch, Web Crypto, D1 and migrations |
+| Tooling | Bun, Node 22.12+, ESLint, Vitest and Playwright |
+| Layout | `src/game/`, `src/components/`, `src/lib/`, `worker/`, `src/__tests__/`, `e2e/bdd/` |
 
-- Start with **Start a run**, Space, or Enter. WASD and arrow keys move the player and change the automatic firing direction; stopping preserves the last direction. Do not intercept keyboard input in forms or other interactive controls.
-- Show touch direction buttons on screens up to 760px wide and with `@media (any-pointer: coarse)`. Holding a direction moves the player; release input on pointer up, cancellation, lost capture, or blur. Keep keyboard and touch inputs independent so releasing one does not cancel the other. Keep mobile action targets at least 44px tall and allow the result area to grow with its form instead of clipping it inside the square arena.
-- Game over offers **Save score** and **Play again**. Accept 1–6 ASCII letters or digits for names. A failed save must retain the name, score, and session for retry, show an error, and allow another attempt. Mark a score saved only after a successful API response.
-- **Play again** may discard an unsaved score. Global Space/Enter shortcuts must not discard a ranked result awaiting save. Guard repeated starts and submissions while requests are in progress.
-- If `/api/token` fails or times out, allow a clearly labeled **practice run** that cannot submit a ranking. Try to acquire a new token for the next run; never silently present an unranked run as ranked.
+## Commands
 
-Keep the Chinese and English README controls in sync. Their shared desktop screenshot is `assets/screenshots/arcade-desktop.png`; use `../assets/screenshots/arcade-desktop.png` from `docs/README.en.md`. Refresh it when the interface changes.
+Run from root. `dev` builds first; rebuild frontend edits explicitly. CI uses Bun 1.4.2.
 
-## Development and checks
+```sh
+bun install --frozen-lockfile
+bun x --no-install husky
+bun run dev
+bun run types
+bun run typecheck
+bun run lint
+bun run build
+bun run test:coverage
+bun run test:e2e
+bunx playwright install chromium
+bun run test:e2e:bdd
+bun run deploy:check
+```
 
-- `bun install --frozen-lockfile`; Node.js 22.12+ and Bun are required.
-- `bun run dev`: build static pages and run Wrangler directly at `http://127.0.0.1:7050`, using fake local D1 IDs and `.wrangler/dev`. It applies local migrations and generates a gitignored local signing key. Rebuild frontend edits with `bun run build`.
-- Local HTTPS: `https://pew-game.dev.hexly.ai` is served by Caddy, which proxies directly to the Worker on `7050`. nmem reserves development/browser-test ports `7050` / `27050`; their inspector ports are `8050` / `28050`. Query nmem before reallocating ports and update Caddy and the local/test scripts together.
-- `bun run types` generates `.wrangler/types.d.ts` from current config; never hand-write Env bindings. `bun run typecheck` checks both Next/frontend and Worker-specific types.
-- `bun run lint`, `bun run test:coverage`, `bun run test:e2e`, `bun run test:e2e:bdd`, and `bun run deploy:check` validate a release. Browser tests build and serve the real export + Worker + SQLite D1 on `27050`, with separate `.wrangler/browser` data. Integration tests use temporary local SQLite directories and disable remote bindings explicitly; preserve checks for lost responses, identical and conflicting concurrent retries, runtime restarts, and real database write rollbacks.
-- Preserve the existing quality thresholds, security checks, and Git hooks. Do not skip hooks, replace checks with `true`, or weaken CI to publish a change.
+`types` generates `.wrangler/types.d.ts`; never hand-write bindings. `start` serves an existing export with the local Worker. Local signing keys are generated into ignored files; no production credentials are needed for local tests. `deploy:check` is packaging only, not deployment.
 
-## Publishing
+## Verification
 
-Increment the patch version `X.Y.Z` to `X.Y.(Z+1)` for routine code releases unless the user specifies another version; this Worker/D1 migration and frontend redesign ships as `0.2.0`. `/api/live` reads the package version. Commit verified changes, push, and wait for the exact commit's GitHub quality CI to pass before deployment.
+6DQ = L1/L2/L3 + G1/G2 + D1. Status: `enforced`, `planned`, `manual`, `N/A`. No focused/skipped tests; statements/branches/functions/lines each ≥95% required.
 
-Use the account configured in Wrangler. `ANTICHEAT_SECRET` is provisioned securely with `wrangler secret put`; do not rotate it on routine deployments. `bun run deploy` builds the static export, applies production `pew-game` migrations, and deploys the Worker/custom domain. It needs Cloudflare Workers and D1 access. Keep production credentials out of the repository and local/test configuration.
+| Piece | Requirement and current reality | Status | Evidence |
+| --- | --- | --- | --- |
+| L1 | Four-metric 95% across first-party game/API logic | planned | Current selected-file Vitest gate is 95/90/95/95; branch/scope gap |
+| L2 | Real HTTP for every API endpoint/method and real SQLite | planned | `test:e2e` invokes handlers with real local D1, not HTTP; browser uses real HTTP but no full API inventory gate |
+| L3 | Real gameplay, save/retry, keyboard/touch/responsive flows | enforced | CI `test:e2e:bdd` → built export + Worker/SQLite |
+| G1 | Frontend/Worker type checks and ESLint, zero warnings/errors | enforced | Pre-commit and CI |
+| G2 | OSV + gitleaks, missing scanner fails | enforced | Staged secret/lockfile hooks and shared CI |
+| D1 | Per-run local state, binding/context/marker guards | planned | Integration uses temporary SQLite; browser resets fixed `.wrangler/browser` without marker guard |
+| Build | Next static export and Worker package | enforced | Pre-push and CI build; deploy:check available |
+| Docs | Shared controls, screenshot and runtime contract updated | manual | README/game guide review |
 
-After deployment, verify the public homepage, `/api/live` (200, expected version, database connected), and `GET /api/scores`. Confirm the Hexly catalogue and `status.hexly.ai` monitor still target `pew.hexly.ai`. When onboarding or changing project identity/site metadata, follow the shared project onboarding skill and synchronize the source README, GitHub repository/profile entry, Hexly catalogue, and logo archive.
+Current hooks check working-tree types/lint/coverage + staged secrets; pre-push builds/tests/lints/integrates then OSV. Target: check-only index L1/G1 <30s; stdin pushed-ref L2/G2 <3min. Never bypass hooks or weaken tests/security to publish.
+
+## Resources / Isolation
+
+| Purpose | Port / persistence | Isolation |
+| --- | --- | --- |
+| Dev | Caddy `https://pew-game.dev.hexly.ai` → 7050; inspector 8050 | `.wrangler/dev`, fake local D1 ID |
+| Browser | 27050; inspector 28050 | `.wrangler/browser`, separate fake D1 binding |
+| Integration | Temporary SQLite directory | `getPlatformProxy` with remote bindings disabled |
+| Production | `https://pew.hexly.ai` | Independent `pew-game` D1, permanent rankings |
+
+Keep nmem/Caddy/config port assignments aligned. Required next step is per-run browser persistence plus local context and `_test_marker` checks before seed/reset/cleanup, with production credentials rejected. Never create remote `-test` resources or use real rankings as fixtures.
+
+## Operations / Release
+
+Authorized release: patch by default unless specified, synchronize version, push and await exact-commit CI. `bun run deploy` builds, applies production migrations, then deploys; existing `ANTICHEAT_SECRET` stays stable. Verify homepage, public `/api/live` version/database and read-only scores, plus Hexly catalogue/status targets. Identity changes follow the shared onboarding/archive workflow.
+
+## Retrospective
+
+Store accident narratives in [Retrospective.md](Retrospective.md). Keep project rules brief here, global lessons in nmem/rules and deterministic checks in hooks/tests.
+
+- A failed save retains the original score/name/session; only an explicit new game may discard it.
