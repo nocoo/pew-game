@@ -30,7 +30,7 @@ jobs:
       source-run-id: ${{ github.event_name == 'workflow_run' && format('{0}', github.event.workflow_run.id) || inputs.source-run-id }}
       runtime-version: "1.4.2"
       install-policy: "blocked"
-      wrangler-version: "4.131.1"
+      wrangler-version: "4.133.0"
       deploy-script: bun run deploy
       environment: production
       concurrency-group: deploy-pew-game-production
