@@ -63,7 +63,7 @@ bun run deploy:check
 
 | Piece | Requirement and current reality | Status | Evidence |
 | --- | --- | --- | --- |
-| L1 | Four-metric 95% across first-party game/API logic | planned | Current selected-file Vitest gate is 95/90/95/95; branch/scope gap |
+| L1 | Four-metric 95% across first-party game/API logic | planned | Current selected-file Vitest gate is 95/95/95/95; broader first-party scope gap remains |
 | L2 | Real HTTP for every API endpoint/method and real SQLite | planned | `test:e2e` invokes handlers with real local D1, not HTTP; browser uses real HTTP but no full API inventory gate |
 | L3 | Real gameplay, save/retry, keyboard/touch/responsive flows | enforced | CI `test:e2e:bdd` → built export + Worker/SQLite |
 | G1 | Frontend/Worker type checks and ESLint, zero warnings/errors | enforced | Pre-commit and CI |
