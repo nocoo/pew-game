@@ -2,7 +2,7 @@
 
 Browser pixel shooter with a persistent leaderboard served by Cloudflare Workers and D1.
 Profile: ts-worker-web.
-Direction: [game/interaction contract](docs/02-game-contract.md), [README.md](README.md).
+Human overview: [README.md](README.md). Direction: [game/interaction contract](docs/02-game-contract.md). Maintain this root `AGENTS.md` as the only project handbook; do not create a `CLAUDE.md` alias, copy or import.
 
 ## Sources of Truth
 
@@ -59,20 +59,19 @@ bun run deploy:check
 
 ## Verification
 
-6DQ = L1/L2/L3 + G1/G2 + D1. Status: `enforced`, `planned`, `manual`, `N/A`. No focused/skipped tests; statements/branches/functions/lines each ≥95% required.
+6DQ = L1/L2/L3 + G2 + D1; the former G1 dimension was merged into L1 on 2026-09-21. Status: `enforced`, `planned`, `manual`, `N/A`. No focused/skipped tests; statements/branches/functions/lines each ≥95% required plus check-only types/lint with zero errors/warnings.
 
 | Piece | Requirement and current reality | Status | Evidence |
 | --- | --- | --- | --- |
-| L1 | Four-metric 95% across first-party game/API logic | planned | Current selected-file Vitest gate is 95/90/95/95; branch/scope gap |
+| L1 (incl. former G1 static) | Four-metric 95% across first-party game/API logic; frontend/Worker type checks and ESLint with zero warnings/errors | planned | Static lane runs today (pre-commit and CI types/ESLint). Coverage gate is selected-file Vitest at 95/90/95/95; branch/scope gap leaves unified L1 planned, and index-snapshot/timing/rejection proof is absent |
 | L2 | Real HTTP for every API endpoint/method and real SQLite | planned | `test:e2e` invokes handlers with real local D1, not HTTP; browser uses real HTTP but no full API inventory gate |
 | L3 | Real gameplay, save/retry, keyboard/touch/responsive flows | enforced | CI `test:e2e:bdd` → built export + Worker/SQLite |
-| G1 | Frontend/Worker type checks and ESLint, zero warnings/errors | enforced | Pre-commit and CI |
 | G2 | OSV + gitleaks, missing scanner fails | enforced | Staged secret/lockfile hooks and shared CI |
 | D1 | Per-run local state, binding/context/marker guards | planned | Integration uses temporary SQLite; browser resets fixed `.wrangler/browser` without marker guard |
 | Build | Next static export and Worker package | enforced | Pre-push and CI build; deploy:check available |
 | Docs | Shared controls, screenshot and runtime contract updated | manual | README/game guide review |
 
-Current hooks check working-tree types/lint/coverage + staged secrets; pre-push builds/tests/lints/integrates then OSV. Target: check-only index L1/G1 <30s; stdin pushed-ref L2/G2 <3min. Never bypass hooks or weaken tests/security to publish.
+Current hooks check working-tree types/lint/coverage + staged secrets; pre-push builds/tests/lints/integrates then OSV. Target: check-only index unified L1 (types, lint, coverage) <30s; stdin pushed-ref L2/G2 <3min. Never bypass hooks or weaken tests/security to publish.
 
 ## Resources / Isolation
 
