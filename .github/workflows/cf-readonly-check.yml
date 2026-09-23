@@ -1,0 +1,60 @@
+name: Cloudflare Read-only Credential Check
+on:
+  push:
+    branches: [chore/cf-readonly-20260923]
+    paths: [.github/workflows/cf-readonly-check.yml]
+permissions: {}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify token and intended resources without writes
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        shell: python
+        run: |
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          account = "d51a8fde361e4be31db17d8c56737c1f"
+          database = "45af91ca-2d7d-4fdd-9370-50931d1c88be"
+          if os.environ.get("CF_ACCOUNT_ID") != account or not os.environ.get("CF_API_TOKEN"):
+              print("credential_inputs: expected account/token presence not verified")
+              raise SystemExit(1)
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, *args, **kwargs):
+                  return None
+
+          opener = urllib.request.build_opener(NoRedirect)
+          def read(label, path, matches):
+              status, success, identity = 0, False, False
+              request = urllib.request.Request(
+                  "https://api.cloudflare.com/client/v4" + path,
+                  headers={"Authorization": "Bearer " + os.environ["CF_API_TOKEN"]},
+                  method="GET",
+              )
+              try:
+                  with opener.open(request, timeout=20) as response:
+                      status = response.status
+                      body = json.loads(response.read(2_000_000))
+                      success = status == 200 and body.get("success") is True
+                      identity = success and matches(body.get("result"))
+              except urllib.error.HTTPError as error:
+                  status = error.code
+              except Exception:
+                  pass
+              print(json.dumps({"endpoint": label, "http": status, "success": success, "expected_identity": bool(identity)}))
+              return bool(identity)
+
+          token = read("user_token_verify", "/user/tokens/verify", lambda value: isinstance(value, dict) and value.get("status") == "active")
+          if not token:
+              token = read("account_token_verify", f"/accounts/{account}/tokens/verify", lambda value: isinstance(value, dict) and value.get("status") == "active")
+          worker = read("pew-game_worker_settings", f"/accounts/{account}/workers/scripts/pew-game/settings", lambda value: isinstance(value, dict) and any(isinstance(binding, dict) and binding.get("type") == "d1" and binding.get("name") == "DB" and binding.get("id") == database for binding in value.get("bindings", [])))
+          d1 = read("pew-game_d1_metadata", f"/accounts/{account}/d1/database/{database}", lambda value: isinstance(value, dict) and value.get("uuid") == database and value.get("name") == "pew-game")
+          print("Read-only authentication/resource access only; no deployment was attempted.")
+          raise SystemExit(0 if token and worker and d1 else 1)
