@@ -1,5 +1,5 @@
 # Retrospective
 
-No accident narratives have been recorded in this log yet.
+## 2026-09-24 — Mirror URLs reached a local dependency commit
 
-Record the date when known, what happened, its cause, and the follow-up. Do not invent an incident to populate this file. Keep recurring project rules brief in AGENTS.md; cross-project lessons belong in global rules or nmem, and deterministic checks belong in hooks or tests.
+The dependency installation embedded Tencent tarball URLs in all registry entries of `bun.lock`. The local commit ran before the required registry-neutral lockfile check, producing an unnecessarily large diff that would have pinned CI to a local installation mirror. This was detected before push. The commit was amended to restore empty registry URLs while retaining versions and integrity hashes, followed by a frozen installation and normal hooks. Inspect lockfile URLs and diff size before staging dependency updates.

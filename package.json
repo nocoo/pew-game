@@ -1,6 +1,6 @@
 {
   "name": "pew-game",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "scripts": {
     "dev": "bun run build && bun scripts/local-worker.ts dev",
@@ -18,7 +18,7 @@
     "typecheck": "bun run types && tsc --noEmit && tsc --project tsconfig.worker.json"
   },
   "dependencies": {
-    "next": "16.3.5",
+    "next": "16.3.6",
     "postcss": "^8.5.28",
     "react": "19.3.0",
     "react-dom": "19.3.0"
@@ -31,12 +31,12 @@
     "@types/react-dom": "19.3.0",
     "@vitest/coverage-v8": "5.0.1",
     "eslint": "10.11.0",
-    "eslint-config-next": "16.3.5",
+    "eslint-config-next": "16.3.6",
     "husky": "^9.1.7",
     "tailwindcss": "^4.3.3",
     "typescript": "6.0.3",
     "vitest": "5.0.1",
-    "wrangler": "4.135.0"
+    "wrangler": "4.138.0"
   },
   "overrides": {
     "baseline-browser-mapping": "^2.11.0",
