@@ -130,8 +130,8 @@ export default function GameCanvas({ onScoreSubmitted }: { onScoreSubmitted: (id
       <div className="cabinet">
         <div className="cabinet-header"><span><i className={phase === "playing" ? "signal-dot playing" : "signal-dot"} />{phase === "playing" ? "ON THE PRAIRIE" : phase === "gameover" ? "RUN COMPLETE" : "READY WHEN YOU ARE"}</span><span>PRAIRIE / 01</span></div>
         <div className="game-hud">
-          <div className="hud-score"><span>SCORE</span><strong aria-label={`Score: ${score}`}>{String(score).padStart(6, "0")}</strong></div>
-          <div className="hud-wave"><span>WAVE</span><strong aria-label={`Wave: ${wave}`}>{String(wave).padStart(2, "0")}</strong></div>
+          <div className="hud-score"><span>SCORE</span><output aria-label={`Score: ${score}`}><strong>{String(score).padStart(6, "0")}</strong></output></div>
+          <div className="hud-wave"><span>WAVE</span><output aria-label={`Wave: ${wave}`}><strong>{String(wave).padStart(2, "0")}</strong></output></div>
           <div className="hud-lives"><span>LIVES</span><div role="img" aria-label={`${Math.max(0, lives)} lives remaining`}>{[0, 1, 2].map((index) => <svg key={index} className={index < lives ? "heart filled" : "heart"} viewBox="0 0 16 14" aria-hidden="true"><path d="M1 2h2V0h4v2h2V0h4v2h2v5h-2v2h-2v2H9v2H7v-2H5V9H3V7H1Z" /></svg>)}</div></div>
         </div>
 
@@ -142,7 +142,7 @@ export default function GameCanvas({ onScoreSubmitted }: { onScoreSubmitted: (id
             <p className="eyebrow">THE PRAIRIE IS CALLING</p>
             <h2>Ready,<br /><em>partner?</em></h2>
             <p className="start-description">Hold your ground.<br />Leave a high score.</p>
-            <button className="primary-button start-button" onClick={() => void startRun()} disabled={starting}>{starting ? "Saddling up…" : "Start a run"}<span aria-hidden="true">↗</span></button>
+            <button type="button" className="primary-button start-button" onClick={() => void startRun()} disabled={starting}>{starting ? "Saddling up…" : "Start a run"}<span aria-hidden="true">↗</span></button>
             <p className="keyboard-hint">or press <kbd>SPACE</kbd></p>
           </div>}
           {phase === "gameover" && <div className="result-overlay"><NameInput score={score} wave={wave} onSubmit={(name) => void submitScore(name)} onRestart={() => void startRun()} submitting={submitting} starting={starting} canSave={ranked} saved={saved} error={error} /></div>}
@@ -152,7 +152,7 @@ export default function GameCanvas({ onScoreSubmitted }: { onScoreSubmitted: (id
         <div className="cabinet-footer"><span role="status">{phase === "title" ? "ONE PLAYER · THREE LIVES" : !ranked ? "PRACTICE RUN · SCORES UNAVAILABLE" : saved ? "SCORE SAVED · NICE SHOOTING" : "AUTO-FIRE ON · KEEP MOVING"}</span><span aria-hidden="true">✦</span></div>
       </div>
 
-      <div className="touch-controls" role="group" aria-label="Touch movement controls">
+      <fieldset className="touch-controls" aria-label="Touch movement controls">
         <div className="touch-pad">{directions.map(({ key, label, arrow }) => <button
           key={key}
           className={`direction-${key}`}
@@ -177,7 +177,7 @@ export default function GameCanvas({ onScoreSubmitted }: { onScoreSubmitted: (id
           onBlur={() => engineRef.current?.setTouchKey(key, false)}
         >{arrow}</button>)}</div>
         <p><strong>Move. Aim. Survive.</strong><br />Hold the arrows to move.<br />We’ll handle the shooting.</p>
-      </div>
+      </fieldset>
     </section>
   );
 }

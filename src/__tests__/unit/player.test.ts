@@ -33,8 +33,8 @@ describe("player", () => {
     expect(p.pos.x).toBeGreaterThan((GAME_WIDTH - TILE_SIZE) / 2);
     // should fire on first move (cooldown was 0)
     expect(fireDir).not.toBeNull();
-    expect(fireDir!.x).toBe(1);
-    expect(fireDir!.y).toBe(0);
+    expect(fireDir?.x).toBe(1);
+    expect(fireDir?.y).toBe(0);
   });
 
   test("updatePlayer fires even when standing still", () => {
@@ -45,8 +45,8 @@ describe("player", () => {
     const fireDir = updatePlayer(p, input, 0.1);
     expect(fireDir).not.toBeNull();
     // should fire in default direction (down)
-    expect(fireDir!.x).toBe(0);
-    expect(fireDir!.y).toBe(1);
+    expect(fireDir?.x).toBe(0);
+    expect(fireDir?.y).toBe(1);
   });
 
   test("updatePlayer does not fire when on cooldown", () => {

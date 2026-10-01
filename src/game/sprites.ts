@@ -113,7 +113,8 @@ function getSpriteCanvas(sprite: SpriteData): OffscreenCanvas {
   const h = sprite.length;
   const w = sprite[0].length;
   const offscreen = new OffscreenCanvas(w, h);
-  const ctx = offscreen.getContext("2d")!;
+  const ctx = offscreen.getContext("2d");
+  if (!ctx) throw new Error("Failed to get offscreen 2D context");
   const imageData = ctx.createImageData(w, h);
 
   for (let y = 0; y < h; y++) {

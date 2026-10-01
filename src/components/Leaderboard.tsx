@@ -34,10 +34,10 @@ export default function Leaderboard({ refreshKey, highlightId }: LeaderboardProp
   return (
     <section className="leaderboard" id="leaderboard" aria-labelledby="leaderboard-title" aria-busy={loading}>
       <div className="board-kicker"><span>THE MOST WANTED</span><span className="little-star" aria-hidden="true">✦</span></div>
-      <div className="board-heading"><h2 id="leaderboard-title">Leaderboard</h2><button className="refresh-button" aria-label="Refresh leaderboard" disabled={loading} onClick={() => setRetry((value) => value + 1)}>↻</button></div>
+      <div className="board-heading"><h2 id="leaderboard-title">Leaderboard</h2><button type="button" className="refresh-button" aria-label="Refresh leaderboard" disabled={loading} onClick={() => setRetry((value) => value + 1)}>↻</button></div>
       <p className="board-description">A place for prairie legends.</p>
       <div className="board-columns" aria-hidden="true"><span>OUTLAW</span><span>POINTS</span></div>
-      {error && <div className="board-error" role="status"><p>Couldn’t load the leaderboard.</p><button className="text-button" onClick={() => setRetry((value) => value + 1)}>Try again <span aria-hidden="true">↗</span></button></div>}
+      {error && <div className="board-error" role="status"><p>Couldn’t load the leaderboard.</p><button type="button" className="text-button" onClick={() => setRetry((value) => value + 1)}>Try again <span aria-hidden="true">↗</span></button></div>}
       {loading && scores.length === 0 ? (
         <div className="board-loading" role="status"><span className="little-star" aria-hidden="true">✦</span> Rounding up the scores…</div>
       ) : scores.length > 0 ? (

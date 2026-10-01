@@ -9,7 +9,7 @@
     "deploy": "bun run build && wrangler d1 migrations apply pew-game --env '' --remote && wrangler deploy --env ''",
     "deploy:check": "wrangler deploy --env '' --dry-run",
     "types": "mkdir -p .wrangler && wrangler types .wrangler/types.d.ts --env ''",
-    "lint": "eslint --max-warnings=0 src/ worker/ scripts/ e2e/",
+    "lint": "biome lint --error-on-warnings .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "vitest run src/__tests__/e2e src/__tests__/integration",
@@ -30,19 +30,15 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitest/coverage-v8": "5.0.3",
-    "eslint": "10.11.0",
-    "eslint-config-next": "16.3.8",
     "husky": "^9.1.7",
     "tailwindcss": "^4.3.3",
-    "typescript": "6.0.3",
+    "typescript": "7.0.2",
     "vitest": "5.0.3",
-    "wrangler": "4.145.0"
+    "wrangler": "4.145.0",
+    "@biomejs/biome": "2.5.15"
   },
   "overrides": {
     "baseline-browser-mapping": "^2.11.0",
-    "brace-expansion": "^5.0.12",
-    "minimatch@3>brace-expansion": "^5.0.12",
-    "minimatch@10>brace-expansion": "^5.0.12",
     "@babel/core": "^7.29.7",
     "browserslist": "4.28.7",
     "js-yaml": "^4.2.0",
@@ -50,13 +46,5 @@
     "sharp": "^0.35.4",
     "postcss": "^8.5.28",
     "nanoid": "^3.3.18"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --max-warnings=0"
-    ]
-  },
-  "patchedDependencies": {
-    "minimatch@3.1.5": "patches/minimatch@3.1.5.patch"
   }
 }

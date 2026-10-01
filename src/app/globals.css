@@ -105,7 +105,7 @@ kbd { display: inline-flex; justify-content: center; align-items: center; min-wi
 .text-button:not(:disabled):hover { color: #f0cf9a; }
 .result-note { color: #c2b49d; font-size: 12px; line-height: 1.7; margin: 0 0 20px; }
 .form-error { text-align: left; color: #f2ad91; font-size: 11px; line-height: 1.5; margin: 12px 0; }
-.touch-controls { display: none; justify-content: center; align-items: center; gap: 28px; padding: 20px 0 10px; }
+.touch-controls { border: 0; margin: 0; min-inline-size: 0; display: none; justify-content: center; align-items: center; gap: 28px; padding: 20px 0 10px; }
 .touch-pad { display: grid; grid-template: repeat(2, 45px) / repeat(3, 45px); gap: 4px; }
 .touch-pad button { border: 1px solid #6a543c; border-radius: 6px; color: var(--brass); background: #30271e; font-size: 24px; touch-action: none; user-select: none; }
 .touch-pad button:active { background: #735337; color: #fff; }

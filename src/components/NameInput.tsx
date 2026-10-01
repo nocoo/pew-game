@@ -26,7 +26,7 @@ export default function NameInput({ score, wave, onSubmit, onRestart, submitting
   }, [canSave, saved]);
 
   return (
-    <div className="run-result" role="region" aria-labelledby="result-title">
+    <section className="run-result" aria-labelledby="result-title">
       <p className="eyebrow">{saved ? "NAME ON THE BOARD" : "GAME OVER"}</p>
       <h2 id="result-title">{saved ? "Nicely done, partner." : "End of the trail."}</h2>
       <div className="result-score"><strong>{score.toLocaleString("en-US")}</strong><span>POINTS · WAVE {wave}</span></div>
@@ -60,6 +60,6 @@ export default function NameInput({ score, wave, onSubmit, onRestart, submitting
       <button ref={restartRef} className={saved || !canSave ? "primary-button" : "text-button"} type="button" onClick={onRestart} disabled={submitting || starting}>
         {starting ? "Saddling up…" : "Play again"} <span aria-hidden="true">↗</span>
       </button>
-    </div>
+    </section>
   );
 }

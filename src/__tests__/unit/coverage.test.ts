@@ -33,7 +33,7 @@ describe("powerup spawn coverage", () => {
     vi.spyOn(Math, "random").mockImplementation(() => seq[i++] ?? 0);
     const pu = trySpawnPowerUp({ x: 10, y: 10 }, 5);
     expect(pu).not.toBeNull();
-    expect(pu!.kind).toBe("nuke");
+    expect(pu?.kind).toBe("nuke");
   });
 
   test("trySpawnPowerUp returns spread on mid-low roll", () => {
@@ -41,7 +41,7 @@ describe("powerup spawn coverage", () => {
     let i = 0;
     vi.spyOn(Math, "random").mockImplementation(() => seq[i++] ?? 0);
     const pu = trySpawnPowerUp({ x: 10, y: 10 }, 3);
-    expect(pu!.kind).toBe("spread");
+    expect(pu?.kind).toBe("spread");
   });
 
   test("trySpawnPowerUp returns rapidfire on mid roll", () => {
@@ -49,7 +49,7 @@ describe("powerup spawn coverage", () => {
     let i = 0;
     vi.spyOn(Math, "random").mockImplementation(() => seq[i++] ?? 0);
     const pu = trySpawnPowerUp({ x: 10, y: 10 }, 3);
-    expect(pu!.kind).toBe("rapidfire");
+    expect(pu?.kind).toBe("rapidfire");
   });
 
   test("trySpawnPowerUp returns pierce on high roll", () => {
@@ -57,7 +57,7 @@ describe("powerup spawn coverage", () => {
     let i = 0;
     vi.spyOn(Math, "random").mockImplementation(() => seq[i++] ?? 0);
     const pu = trySpawnPowerUp({ x: 10, y: 10 }, 3);
-    expect(pu!.kind).toBe("pierce");
+    expect(pu?.kind).toBe("pierce");
   });
 
   test("nuke not selected below wave 5 even on low roll", () => {
@@ -65,7 +65,7 @@ describe("powerup spawn coverage", () => {
     let i = 0;
     vi.spyOn(Math, "random").mockImplementation(() => seq[i++] ?? 0);
     const pu = trySpawnPowerUp({ x: 10, y: 10 }, 4);
-    expect(pu!.kind).toBe("spread");
+    expect(pu?.kind).toBe("spread");
   });
 });
 

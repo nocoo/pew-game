@@ -317,7 +317,8 @@ export class GameEngine {
   /** Build a static background canvas with grass tiles and border decorations */
   private buildBackground(): OffscreenCanvas {
     const bg = new OffscreenCanvas(GAME_WIDTH, GAME_HEIGHT);
-    const ctx = bg.getContext("2d")!;
+    const ctx = bg.getContext("2d");
+    if (!ctx) throw new Error("Failed to get offscreen 2D context");
     ctx.imageSmoothingEnabled = false;
 
     // tile grass

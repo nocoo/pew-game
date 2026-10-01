@@ -73,7 +73,7 @@ Rankings use Wrangler's local SQLite D1 in `.wrangler/dev`. The first start appl
 
 ```bash
 bun run typecheck       # Generate Worker Env types; check frontend and Worker
-bun run check           # ESLint, unit, game-loop, and local D1 integration tests
+bun run check           # Biome, unit, game-loop, and local D1 integration tests
 bun run test:coverage
 bun run test:e2e:bdd    # Build and test real gameplay and ranking in a browser
 ```
@@ -134,7 +134,7 @@ e2e/bdd/           Static export + Worker + SQLite D1 browser test
 | Game | TypeScript, Canvas 2D, OffscreenCanvas, requestAnimationFrame |
 | Web page | Next.js static export, React, Tailwind CSS |
 | APIs and leaderboard | Cloudflare Workers Static Assets, D1, Web Crypto HMAC |
-| Development and testing | Bun, ESLint, Vitest, Playwright |
+| Development and testing | Bun, Biome, Vitest, Playwright |
 
 ## Documentation
 

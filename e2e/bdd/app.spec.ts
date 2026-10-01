@@ -103,7 +103,7 @@ test("the arcade fits desktop, tablet, and small phone screens", async ({ page }
   for (const width of [1440, 850, 760, 390, 320]) {
     await page.setViewportSize({ width, height: 960 });
     await expect(page.getByRole("button", { name: "Start a run", exact: true })).toBeVisible();
-    const dimensions = await page.evaluate(() => ({ page: document.documentElement.scrollWidth, viewport: window.innerWidth, canvas: document.querySelector("canvas")!.getBoundingClientRect().width }));
+    const dimensions = await page.evaluate(() => ({ page: document.documentElement.scrollWidth, viewport: window.innerWidth, canvas: document.querySelector("canvas")?.getBoundingClientRect().width }));
     expect(dimensions.page).toBeLessThanOrEqual(dimensions.viewport);
     expect(dimensions.canvas).toBeLessThan(dimensions.viewport);
   }
@@ -120,8 +120,8 @@ test("touch controls and the result form work on a small phone", async ({ browse
   await page.getByRole("button", { name: "Start a run", exact: true }).tap();
   await expect(left).toBeEnabled();
   const buttonSize = await left.boundingBox();
-  expect(buttonSize!.width).toBeGreaterThanOrEqual(44);
-  expect(buttonSize!.height).toBeGreaterThanOrEqual(44);
+  expect(buttonSize?.width).toBeGreaterThanOrEqual(44);
+  expect(buttonSize?.height).toBeGreaterThanOrEqual(44);
   await expect(left).toBeInViewport();
   await left.tap();
   await expect(page.getByText("ON THE PRAIRIE", { exact: true })).toBeVisible();

@@ -33,7 +33,7 @@ This handbook is the contract; hooks, CI and config enforce it. Raise weaker enf
 | --- | --- |
 | Game/UI | TypeScript, Canvas/OffscreenCanvas, React/Next static export, Tailwind |
 | API/data | Worker Fetch, Web Crypto, D1 and migrations |
-| Tooling | Bun, Node 22.12+, ESLint, Vitest and Playwright |
+| Tooling | Bun, Node 22.12+, Biome, Vitest and Playwright |
 | Layout | `src/game/`, `src/components/`, `src/lib/`, `worker/`, `src/__tests__/`, `e2e/bdd/` |
 
 ## Commands
@@ -63,7 +63,7 @@ bun run deploy:check
 
 | Piece | Requirement and current reality | Status | Evidence |
 | --- | --- | --- | --- |
-| L1 (incl. former G1 static) | Four-metric 95% across first-party game/API logic; frontend/Worker type checks and ESLint with zero warnings/errors | planned | Static lane runs today (pre-commit and CI types/ESLint). Coverage gate is selected-file Vitest at 95/95/95/95; broader first-party scope gap leaves unified L1 planned, and index-snapshot/timing/rejection proof is absent |
+| L1 (incl. former G1 static) | Four-metric 95% across first-party game/API logic; frontend/Worker type checks and Biome with zero warnings/errors | planned | Static lane runs today (pre-commit and CI types/Biome). Coverage gate is selected-file Vitest at 95/95/95/95; broader first-party scope gap leaves unified L1 planned, and index-snapshot/timing/rejection proof is absent |
 | L2 | Real HTTP for every API endpoint/method and real SQLite | planned | `test:e2e` invokes handlers with real local D1, not HTTP; browser uses real HTTP but no full API inventory gate |
 | L3 | Real gameplay, save/retry, keyboard/touch/responsive flows | enforced | CI `test:e2e:bdd` → built export + Worker/SQLite |
 | G2 | OSV + gitleaks, missing scanner fails | enforced | Staged secret/lockfile hooks and shared CI |

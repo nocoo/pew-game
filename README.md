@@ -73,7 +73,7 @@ bun run dev
 
 ```bash
 bun run typecheck       # 生成 Worker Env 类型，检查前端和 Worker
-bun run check           # ESLint、单元、游戏循环和本地 D1 集成测试
+bun run check           # Biome、单元、游戏循环和本地 D1 集成测试
 bun run test:coverage
 bun run test:e2e:bdd    # 构建静态页面并进行真实浏览器游戏/排名测试
 ```
@@ -134,7 +134,7 @@ e2e/bdd/           静态导出 + Worker + SQLite D1 浏览器测试
 | 游戏 | TypeScript、Canvas 2D、OffscreenCanvas、requestAnimationFrame |
 | Web 页面 | Next.js 静态导出、React、Tailwind CSS |
 | API 与排行榜 | Cloudflare Workers Static Assets、D1、Web Crypto HMAC |
-| 开发与测试 | Bun、ESLint、Vitest、Playwright |
+| 开发与测试 | Bun、Biome、Vitest、Playwright |
 
 ## 文档
 
