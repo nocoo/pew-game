@@ -1,6 +1,6 @@
 {
   "name": "pew-game",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "scripts": {
     "dev": "bun run build && bun scripts/local-worker.ts dev",
