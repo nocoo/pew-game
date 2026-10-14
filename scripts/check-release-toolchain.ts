@@ -9,12 +9,14 @@ const pins = [...workflow.matchAll(
   /^\s+wrangler-version:\s*(?:"([^"]+)"|'([^']+)'|([^\s#]+))\s*(?:#.*)?$/gm,
 )].map((match) => match[1] ?? match[2] ?? match[3]);
 
-if (!/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(declared) || pins.length !== 1) {
-  throw new Error("Declare one exact Wrangler version in package.json and Release.");
+if (!/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(declared) || pins.length > 1) {
+  throw new Error("Declare one exact Wrangler version in package.json and at most one Release pin.");
 }
-if (installed !== declared || pins[0] !== declared) {
+// base-ci v2026.9 derives Wrangler from the lockfile; a Release pin is optional.
+const pin = pins[0] ?? "lockfile";
+if (installed !== declared || (pin !== "lockfile" && pin !== declared)) {
   throw new Error(
-    `Wrangler version mismatch: package.json=${declared}, installed=${installed}, Release=${pins[0]}. Update the dependency and Release pin together.`,
+    `Wrangler version mismatch: package.json=${declared}, installed=${installed}, Release=${pin}. Update the dependency and Release pin together.`,
   );
 }
 
