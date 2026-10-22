@@ -12,7 +12,7 @@ const pins = [...workflow.matchAll(
 if (!/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(declared) || pins.length > 1) {
   throw new Error("Declare one exact Wrangler version in package.json and at most one Release pin.");
 }
-// base-ci v2026.9 derives Wrangler from the lockfile; a Release pin is optional.
+// base-ci main 2026-10-22 derives Wrangler from the lockfile; a Release pin is optional.
 const pin = pins[0] ?? "lockfile";
 if (installed !== declared || (pin !== "lockfile" && pin !== declared)) {
   throw new Error(
