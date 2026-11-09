@@ -42,7 +42,6 @@ Run from root. `dev` builds first; rebuild frontend edits explicitly. CI uses Bu
 
 ```sh
 bun install --frozen-lockfile
-bun x --no-install husky
 bun run dev
 bun run types
 bun run typecheck
@@ -63,7 +62,7 @@ bun run deploy:check
 
 | Piece | Requirement and current reality | Status | Evidence |
 | --- | --- | --- | --- |
-| L1 (incl. former G1 static) | Four-metric 95% across first-party game/API logic; frontend/Worker type checks and Biome with zero warnings/errors | planned | Static lane runs today (pre-commit and CI types/Biome). Coverage gate is selected-file Vitest at 95/95/95/95; broader first-party scope gap leaves unified L1 planned, and index-snapshot/timing/rejection proof is absent |
+| L1 (incl. former G1 static) | Four-metric 95% across first-party game/API logic; frontend/Worker type checks and Biome with zero warnings/errors; Git index snapshot on pre-commit | enforced | Husky (`prepare`) → `git checkout-index` snapshot → `bun run typecheck` → `bun run lint` → `bun run test:coverage` (Vitest v8, 95%×4) plus staged `gitleaks protect`. Snapshot validates `test:coverage` emits `coverage/`. Staged lockfiles must match installed `node_modules`. Coverage scope remains selected game/lib/worker files in `vitest.config.ts`. |
 | L2 | Real HTTP for every API endpoint/method and real SQLite | planned | `test:e2e` invokes handlers with real local D1, not HTTP; browser uses real HTTP but no full API inventory gate |
 | L3 | Real gameplay, save/retry, keyboard/touch/responsive flows | enforced | CI `test:e2e:bdd` → built export + Worker/SQLite |
 | G2 | OSV + gitleaks, missing scanner fails | enforced | Staged secret/lockfile hooks and shared CI |
@@ -71,7 +70,7 @@ bun run deploy:check
 | Build | Next static export and Worker package | enforced | Pre-push and CI build; deploy:check available |
 | Docs | Shared controls, screenshot and runtime contract updated | manual | README/game guide review |
 
-Current hooks check working-tree types/lint/coverage + staged secrets; pre-push builds/tests/lints/integrates then OSV. Target: check-only index unified L1 (types, lint, coverage) <30s; stdin pushed-ref L2/G2 <3min. Never bypass hooks or weaken tests/security to publish.
+Current pre-commit gates the Git index snapshot: types, lint, coverage and staged secrets. Pre-push builds, runs Vitest, lint and integration tests, then OSV on the working tree. Target: check-only index unified L1 (types, lint, coverage) <30s; stdin pushed-ref L2/G2 <3min. Never bypass hooks or weaken tests/security to publish.
 
 ## Resources / Isolation
 
