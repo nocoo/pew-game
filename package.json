@@ -3,6 +3,7 @@
   "version": "0.2.6",
   "private": true,
   "scripts": {
+    "prepare": "husky",
     "dev": "bun run build && bun scripts/local-worker.ts dev",
     "build": "bun run types && next build",
     "start": "bun scripts/local-worker.ts dev",
