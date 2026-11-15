@@ -58,7 +58,7 @@ bun run deploy:check
 
 ## Verification
 
-6DQ = L1/L2/L3 + G2 + D1; the former G1 dimension was merged into L1 on 2026-09-21. Status: `enforced`, `planned`, `manual`, `N/A`. No focused/skipped tests; statements/branches/functions/lines each ≥95% required plus check-only types/lint with zero errors/warnings.
+Quality slots are enforced via `.github/workflows/quality-slots.yml` (`quality / Z1: Gate`, System1 v1.3.0 / `nocoo/base-ci v2026.15`). Status: `enforced`, `planned`, `manual`, `N/A`. No focused/skipped tests; statements/branches/functions/lines each ≥95% required plus check-only types/lint with zero errors/warnings.
 
 | Piece | Requirement and current reality | Status | Evidence |
 | --- | --- | --- | --- |
