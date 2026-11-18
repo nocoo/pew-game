@@ -19,7 +19,7 @@
     "typecheck": "bun run types && tsc --noEmit && tsc --project tsconfig.worker.json"
   },
   "dependencies": {
-    "next": "16.4.3",
+    "next": "16.4.6",
     "postcss": "^8.5.32",
     "react": "19.3.1",
     "react-dom": "19.3.1"
